@@ -1,7 +1,7 @@
 # Asistente de contexto de partido para aficionados y comentaristas
 
 Fecha: 19 de octubre de 2026.
-Estado: diseño propuesto para revisión. El nombre comercial se elegirá después.
+Estado: diseño aprobado por el participante en la conversación. El nombre comercial se elegirá después.
 
 ## 1. Propósito y decisiones acordadas
 
