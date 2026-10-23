@@ -4,6 +4,8 @@ import pytest
 
 from match_context.ingest_cli import main
 from match_context import ingest_cli
+from match_context.domain.events import GeneratedMatch
+from match_context.storage.sqlite import SQLiteEventLog
 
 
 def test_cli_restart_continues_and_can_inspect_an_earlier_view(tmp_path, capsys):
@@ -44,3 +46,22 @@ def test_realtime_command_advances_from_elapsed_time(tmp_path, capsys, monkeypat
     assert report["ingestion"]["available_second"] == 60
     assert report["ingestion"]["new_events"] > 0
     assert report["view"]["last_event_second"] <= 60
+
+
+@pytest.mark.parametrize("second", [10, 5400])
+def test_realtime_restart_drains_remaining_events_at_its_current_target(tmp_path, capsys, monkeypatch,
+                                                                       metadata, make_event, second):
+    path = tmp_path / "partial.sqlite3"
+    events = tuple(make_event(sequence=i, occurred_second=second, available_second=second,
+                              period=1 if second < 2700 else 2) for i in (1, 2))
+    match = GeneratedMatch(metadata=metadata, events=events)
+    log = SQLiteEventLog(path)
+    log.register_match(metadata)
+    log.append(events[0])
+    log.close()
+    monkeypatch.setattr(ingest_cli, "generate_match", lambda *_: match)
+    assert main(["--database", str(path), "--until-second", str(second), "--realtime"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["ingestion"]["sequence"] == 2
+    assert result["ingestion"]["new_events"] == 1
+    assert result["view"]["cutoff_sequence"] == 2

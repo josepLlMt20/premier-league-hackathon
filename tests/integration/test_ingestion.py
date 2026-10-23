@@ -100,6 +100,19 @@ def test_completion_caps_clock_at_match_duration(log_factory, metadata, make_eve
     assert ingestor.advance("match-1", 1) == 0
 
 
+def test_final_second_is_not_complete_until_all_its_events_are_committed(log_factory, metadata, make_event):
+    log = log_factory()
+    events = tuple(make_event(sequence=i, occurred_second=5400, available_second=5400, period=2)
+                   for i in (1, 2))
+    match = GeneratedMatch(metadata=metadata, events=events)
+    log.register_match(metadata)
+    log.append(events[0])
+    restarted = Ingestor(log, (match,))
+    assert restarted.status("match-1").state == "running"
+    assert restarted.tick("match-1", 5400) == 1
+    assert restarted.status("match-1").state == "complete"
+
+
 def test_goal_and_late_annulment_preserve_two_viewer_positions(log_factory, metadata, make_event):
     log = log_factory()
     events = (make_event(kind="shot", occurred_second=1490, available_second=1490),

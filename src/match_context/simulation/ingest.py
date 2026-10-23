@@ -129,5 +129,7 @@ class Ingestor:
                 return IngestStatus(match_id, position.sequence, position.available_second,
                                     "failed", self._failed[match_id])
             position = self._position(match_id)
+            complete = (position.available_second == 5400
+                        and position.sequence == len(self._match(match_id).events))
             return IngestStatus(match_id, position.sequence, position.available_second,
-                                "complete" if position.available_second == 5400 else "running")
+                                "complete" if complete else "running")

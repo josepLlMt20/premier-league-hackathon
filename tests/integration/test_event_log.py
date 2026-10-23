@@ -133,3 +133,29 @@ def test_sqlite_rolls_back_event_if_header_update_fails(tmp_path, metadata, make
     with sqlite3.connect(path) as connection:
         assert connection.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0
     log.close()
+
+
+def test_sqlite_commit_failure_rolls_back_and_same_writer_can_resume(tmp_path, metadata, make_event):
+    from match_context.domain.events import GeneratedMatch
+    from match_context.simulation.ingest import IngestionFailed, Ingestor
+
+    path = tmp_path / "busy.sqlite3"
+    log = SQLiteEventLog(path)
+    writer = Ingestor(log, (GeneratedMatch(metadata=metadata, events=(make_event(),)),))
+    log._connection.execute("PRAGMA busy_timeout = 20")
+    reader = sqlite3.connect(path, isolation_level=None)
+    try:
+        reader.execute("BEGIN")
+        reader.execute("SELECT * FROM matches").fetchall()
+        with pytest.raises(IngestionFailed):
+            writer.tick("match-1", 10)
+        reader.rollback()
+        assert log.head("match-1") == 0
+        assert log.position("match-1").available_second == 0
+        assert not log._connection.in_transaction
+        writer.resume("match-1")
+        assert writer.tick("match-1", 10) == 1
+        assert log.head("match-1") == 1
+    finally:
+        reader.close()
+        log.close()

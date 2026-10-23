@@ -37,3 +37,14 @@ The first storage test run failed because storage did not exist; the first inges
 Offline tests do not verify live Azure authentication, permissions, throttling, service latency or restart behavior of a deployed container. The fake transport is a narrow test double, not an Azure Storage emulator. Those checks remain a deployment prerequisite. Per-append full-prefix validation prioritizes correctness for the small synthetic matches; throughput for real feeds is unmeasured. End-to-end spoiler protection also requires the later API and browser tests.
 
 Measured before independent review: 153 tests passed. A full main-scenario SQLite replay committed all 951 events through second 5400, reopened the database, matched the original event tuple and appended zero duplicates; the complete smoke took 32.321 seconds on this Windows workspace. This is an offline throughput observation, not a live-stream latency benchmark.
+
+## Independent review and final recovery regressions
+
+A fresh read-only reviewer independently ran the 153-test suite and found two Important recovery issues, with no Critical or Minor findings. Both were reproduced by five failing test cases before fixes:
+
+1. A real SQLite reader lock could make COMMIT fail while leaving the writer's transaction open and exposing uncommitted progress. COMMIT now runs inside the rollback guard. The regression checks zero durable progress, no remaining transaction, and successful resume with the same adapter after the reader releases its lock.
+2. A restart could claim completion or skip the realtime loop with only part of the target second committed. Completion now requires all source events, and realtime startup drains the current second before waiting for clock advancement. Both an ordinary second and second 5400 are covered; the final-second status test runs against both adapters.
+
+All five regressions passed after the fixes. The final complete suite passes 158 tests from a newly installed development environment, including the installed CLI entry point and a successful dependency consistency check. The author verified the fixes with tests; no second independent review was performed.
+
+Review boundaries were explicitly retained: live cloud conditions need deployment verification; HTTP/browser isolation and agent behavior belong to their later tasks; distributed ownership across replicas is not supplied; deliberate external database edits and physical-corruption repair have no recovery contract; larger/real-feed throughput is not established. These limits do not weaken validation of inputs through the delivered storage interface.

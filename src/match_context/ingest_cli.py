@@ -41,6 +41,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.until_second < initial.available_second:
             parser.error("Cannot rewind shared ingestion; use --view-second to inspect an earlier position")
         if args.realtime:
+            # A previous tick may have stopped between events at this same second.
+            ingestor.tick(match_id, initial.available_second)
             previous = time.monotonic()
             while log.position(match_id).available_second < args.until_second:
                 time.sleep(0.05)

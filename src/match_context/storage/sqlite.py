@@ -30,11 +30,10 @@ class SQLiteEventLog(EventLog):
             self._connection.execute("BEGIN IMMEDIATE")
             try:
                 yield
+                self._connection.commit()
             except BaseException:
                 self._connection.rollback()
                 raise
-            else:
-                self._connection.commit()
 
     def _header(self, match_id):
         row = self._connection.execute(
