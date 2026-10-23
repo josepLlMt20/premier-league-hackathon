@@ -81,7 +81,7 @@ Propiedad de los tipos: `domain/events.py` define `MatchMetadata` (equipos, juga
 
 Las fixtures completas y sus manifiestos permanecen en recursos privados del backend. La protección de spoilers es una propiedad de los contratos de la aplicación: no pretende ocultar el desenlace a quien abra deliberadamente los datos sintéticos del repositorio público.
 
-## Tarea 0: Entorno reproducible y preparación de Azure
+## Task 0: Entorno reproducible y preparación de Azure
 
 **Files:** crear `pyproject.toml`, locks, `.env.example`, `src/match_context/__init__.py`, `src/match_context/config.py`, `scripts/preflight.py`, `tests/unit/test_config.py`, `web/package.json`, `web/package-lock.json`, `docs/readiness.md`; ampliar `.gitignore` con `.venv/`, `.pytest_cache/`, `__pycache__/`, `web/node_modules/`, `web/dist/` y reportes temporales.
 
@@ -94,7 +94,7 @@ Las fixtures completas y sus manifiestos permanecen en recursos privados del bac
 
 **Salida verificable:** instalación reproducible y diagnóstico honesto. Las tareas locales 1 a 3 pueden avanzar mientras se resuelve Azure; el smoke real de agentes y el despliegue quedan condicionados al acceso y presupuesto.
 
-## Tarea 1: Eventos y cuatro escenarios coherentes
+## Task 1: Eventos y cuatro escenarios coherentes
 
 **Files:** crear `domain/events.py`, `domain/contracts.py`, `simulation/generator.py`, `simulation/fixtures.py`, `tests/conftest.py`, `tests/unit/test_simulation.py`, `docs/data-dictionary.md`.
 
@@ -105,7 +105,7 @@ Las fixtures completas y sus manifiestos permanecen en recursos privados del bac
 - [ ] Separar el manifiesto de verdad del contenido disponible a agentes. Documentar cada atributo y la calidad de ocasión como heurística del simulador. Repetir pruebas, inspeccionar un encuentro generado y confirmar PASS.
 - [ ] Commit: `feat: generate coherent synthetic match scenarios`.
 
-## Tarea 2: Registro persistente e ingesta reproducible
+## Task 2: Registro persistente e ingesta reproducible
 
 **Files:** crear `storage/base.py`, `storage/sqlite.py`, `storage/azure_tables.py`, `simulation/ingest.py`, `tests/integration/test_event_log.py`, `tests/integration/test_azure_tables.py`.
 
@@ -116,7 +116,7 @@ Las fixtures completas y sus manifiestos permanecen en recursos privados del bac
 - [ ] Implementar un único escritor de ingesta a velocidad 30x configurable, con estado persistente e inserción idempotente. Pausa, reinicio y velocidad de un espectador afectan su reproducción; no reinician el flujo compartido. Si la ingesta falla, detener avance y exponer último evento recibido. Repetir pruebas y confirmar PASS.
 - [ ] Commit: `feat: persist immutable event prefixes and replay ingestion`.
 
-## Tarea 3: Instantáneas, métricas y evidencia temporal
+## Task 3: Instantáneas, métricas y evidencia temporal
 
 **Files:** crear `analysis/snapshot.py`, `analysis/metrics.py`, `analysis/patterns.py`, `analysis/evidence.py`, `tests/unit/test_snapshot.py`, `tests/unit/test_metrics.py`, `tests/unit/test_patterns.py`.
 
@@ -128,7 +128,7 @@ Las fixtures completas y sus manifiestos permanecen en recursos privados del bac
 - [ ] Mantener ranking reproducible; el agente puede elegir entre candidatos respaldados, pero no cambiar sus números. Evidencia incluye todo evento usado en el cálculo y comparación, dentro del cutoff. Repetir pruebas y añadir un caso donde un equipo favorito no cambia los hechos.
 - [ ] Commit: `feat: derive bounded match facts and explainable patterns`.
 
-## Tarea 4: Tres agentes con revisión y fallos controlados
+## Task 4: Tres agentes con revisión y fallos controlados
 
 **Files:** crear `agents/base.py`, `agents/tools.py`, `agents/foundry.py`, `agents/orchestrator.py`, `agents/validation.py`, `agents/fallback.py`, `tests/unit/test_orchestration.py`, `tests/unit/test_claim_validation.py`, `tests/live/test_foundry.py`.
 
@@ -140,7 +140,7 @@ Las fixtures completas y sus manifiestos permanecen en recursos privados del bac
 - [ ] Crear adaptador Foundry con las versiones fijadas y `response_format` Pydantic. Contabilizar llamadas reales incluyendo invocación de herramientas y reparaciones: límites de configuración 7 llamadas de modelo, 8 herramientas, 1200 tokens de salida por llamada y deadline total de 10 s. Registrar uso y decisión, no razonamiento privado. Con Azure y presupuesto confirmados, ejecutar `python -m pytest tests/live/test_foundry.py -m live -q`: debe mostrar llamadas y herramientas reales, una salida validada y aislamiento entre solicitudes. Sin acceso, marcar este smoke pendiente explícitamente.
 - [ ] Commit: `feat: orchestrate grounded Foundry briefings with review`.
 
-## Tarea 5: API pública acotada y servicio de contexto
+## Task 5: API pública acotada y servicio de contexto
 
 **Files:** crear `service/context.py`, `service/cache.py`, `api/app.py`, `api/routes.py`, `api/schemas.py`, `scripts/export_openapi.py`, `tests/integration/test_api.py`, `tests/unit/test_cache.py`.
 
@@ -152,7 +152,7 @@ Rutas: `GET /healthz`; `GET /api/matches` devuelve solo metadata estática; `GET
 - [ ] Construir solicitudes desde un único snapshot, propagar deadline, devolver errores con códigos estables y excluir fixture, manifiesto, prompts y configuración del JSON público. Usar caché en memoria de máximo 128 resultados; al reiniciar se reconstruye desde el registro persistente. Dos generaciones concurrentes como máximo y error 429 explícito con reintento; las consultas de datos no requieren un modelo operativo.
 - [ ] Arrancar backend local con ingesta, repetir pruebas y exportar OpenAPI. Comprobar que un resultado factual se distingue de uno verificado. Commit: `feat: expose temporal match context and evidence API`.
 
-## Tarea 6: Recorrido completo del aficionado
+## Task 6: Recorrido completo del aficionado
 
 **Files:** crear `web/index.html`, configuración Vite/TS/Vitest, `web/src/main.tsx`, `web/src/App.tsx`, `web/src/api/client.ts`, `web/src/domain/playback.ts`, `web/src/features/viewer/{Viewer,PlaybackControls,CatchUpPanel,EvidencePanel}.tsx`, `web/src/components/{Pitch,Timeline,Status}.tsx`, `web/src/styles/{tokens,app}.css`, `web/src/features/viewer/Viewer.test.tsx`, `web/e2e/fan.spec.ts`.
 
@@ -163,7 +163,7 @@ Rutas: `GET /healthz`; `GET /api/matches` devuelve solo metadata estática; `GET
 - [ ] Aplicar diseño visual deliberado durante ejecución con las habilidades de frontend pertinentes; usar tokens, etiquetas, foco, teclado, contraste y movimiento reducido. La síntesis aparece primero; la evidencia se abre bajo demanda. Mantener un recorrido usable en 390 px y en escritorio.
 - [ ] Ejecutar recorrido contra backend real en modo scripted explícito mediante `npm.cmd --prefix web run test:e2e -- fan.spec.ts`; inspeccionar escritorio y móvil, red y localStorage para detectar contenido futuro. La prueba scripted no reemplaza la evaluación Foundry de tarea 9. Commit: `feat: deliver spoiler-aware fan catch-up experience`.
 
-## Tarea 7: Briefing profesional y overlay desde la misma evidencia
+## Task 7: Briefing profesional y overlay desde la misma evidencia
 
 **Files:** crear `web/src/features/commentator/{Commentator,BriefingCard,OverlayPreview,TracePanel}.tsx`, `web/src/features/commentator/export.ts`, `web/src/features/commentator/Commentator.test.tsx`, `web/e2e/commentator.spec.ts`; modificar `web/src/App.tsx` y el selector de audiencia.
 
@@ -173,7 +173,7 @@ Rutas: `GET /healthz`; `GET /api/matches` devuelve solo metadata estática; `GET
 - [ ] Construir hasta tres tarjetas con titular, frase, evidencia e interpretación diferenciada. Añadir copiar texto, descargar JSON y vista de overlay que recorta sin cambiar el sentido ni eliminar la limitación esencial; si no cabe, usar una versión breve validada. Mostrar resumen de roles y decisiones, sin prompts ni cadenas privadas de razonamiento.
 - [ ] Ejecutar `npm.cmd --prefix web run test:e2e -- commentator.spec.ts`, abrir la misma evidencia desde ambos modos y comprobar cifras equivalentes. Commit: `feat: add commentator briefings and bounded overlay export`.
 
-## Tarea 8: Despliegue Azure y persistencia comprobada
+## Task 8: Despliegue Azure y persistencia comprobada
 
 **Files:** crear `infra/main.bicep`, `infra/storage.bicep`, `infra/app.bicep`, `infra/roles.bicep`, `Dockerfile`, `.dockerignore`, `scripts/seed_cloud.py`, `scripts/smoke_cloud.py`, `tests/integration/test_cloud_contract.py`; actualizar `docs/readiness.md`.
 
@@ -184,7 +184,7 @@ Rutas: `GET /healthz`; `GET /api/matches` devuelve solo metadata estática; `GET
 - [ ] Presentar recursos y parámetros concretos al usuario antes de provisionar recursos de pago o publicar. Tras autorización aplicable, desplegar en una región con el modelo disponible, usar identidad administrada, sembrar datos sintéticos idempotentemente y confirmar que un reinicio conserva eventos. El smoke registra resultados, sin imprimir tokens.
 - [ ] Ejecutar `python scripts/smoke_cloud.py --url <url-devuelta-por-el-despliegue>` y repetir tras reinicio. Verificar backend Foundry real, límites de llamadas y estado de ingesta. Commit: `deploy: host match context assistant on Azure`.
 
-## Tarea 9: Evaluación, utilidad y material de entrega
+## Task 9: Evaluación, utilidad y material de entrega
 
 **Files:** crear `scripts/evaluate.py`, `tests/integration/test_spoiler_matrix.py`, `web/e2e/dual-viewer.spec.ts`, `docs/evaluation.md`, `docs/demo-script.md`, `docs/submission.md`, `README.md`; guardar reportes generados bajo `tmp/evaluation/`.
 
