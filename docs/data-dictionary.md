@@ -55,4 +55,6 @@ Sequence selection is `(start, end]`. Time comparisons use explicit occurred-tim
 - **High recoveries:** recoveries beginning in the attacking third, defined by normalized x ≥ 70 m.
 - **Candidate rules:** high recoveries increase by at least 2; shot quality total increases by at least 30 with at least 2 current shots; territorial share increases by at least 20 percentage points with at least 10 completed passes in each comparison window.
 
-Patterns compare complete 300-second windows. Observations with insufficient history or samples retain their facts without manufacturing a trend. Each fact records its interval, denominator where relevant, method and evidence. Interpretations based on these heuristics must not assert demonstrated tactical causation.
+Patterns compare complete 300-second windows. The engine examines five-minute boundaries within the requested interval and its latest known point. Ranking is deterministic; overlapping candidates of the same pattern and team that reuse the same current recovery, shot or pass events are suppressed, leaving at most three distinct episodes. A favorite team can affect ranking, never the measured facts.
+
+Observations with insufficient history or samples retain their facts without manufacturing a trend. Each fact records its interval, denominator where relevant, method and evidence. Interpretations based on these heuristics must not assert demonstrated tactical causation.

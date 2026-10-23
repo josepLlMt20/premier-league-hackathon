@@ -82,7 +82,7 @@ def generate_match(scenario: str, seed: int) -> GeneratedMatch:
                 quality_x = 92 if pressure_phase and focused else 48
                 current = point(team, clock, quality_x, 34)
                 shot_id = emit("shot", clock, team, actor, current,
-                    attributes={"on_target": True, "under_pressure": not focused})
+                    attributes={"on_target": focused or minute % 3 == 0, "under_pressure": not focused})
                 if pressure_phase and minute == 24:
                     goal_id = emit("goal", clock + 1, team, actor, current,
                                    attributes={"shot_event_id": shot_id})

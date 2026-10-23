@@ -8,7 +8,8 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 
 - Product design and implementation plan documented.
 - Local Microsoft Foundry connection verified with Microsoft Agent Framework, Azure sign-in, a local function tool and a Pydantic structured response.
-- The match generator, application, three-agent workflow and Azure application deployment are **not implemented yet**.
+- Four seeded 90-minute scenarios, immutable events, bounded snapshots, metrics, pattern detection and inspectable evidence are implemented with automated tests.
+- The web application, persistent event ingestion, three-agent workflow and Azure application deployment are **not implemented yet**.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.
 
@@ -18,6 +19,32 @@ The connection probe is a small infrastructure check, not a demonstration of the
 - [Implementation plan](docs/superpowers/plans/2026-10-19-match-context-implementation.md)
 - [Foundry setup and measured results](docs/readiness.md)
 - [Original connection probe result, 20 October 2026](docs/evidence/2026-10-20-foundry-smoke.json)
+- [Synthetic data and measurement definitions](docs/data-dictionary.md)
+
+## Run the match engine locally
+
+Requires Python 3.13. No Azure account, credentials or model calls are needed for generation and analysis.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-core-dev.lock
+.\.venv\Scripts\python.exe -m pip install --no-deps -e .
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m match_context --scenario main --until-second 1500
+```
+
+The command prints JSON with the score as known at the selected point, numeric facts, comparison windows, up to three distinct pattern candidates and event references. Add `--include-evidence` to expand the referenced raw events. Use `--from-second`, `--seed` or `--favorite-team amber|cobalt` to change the request.
+
+Try the neutral and sterile scenarios, then compare a correction before and after it becomes available:
+
+```powershell
+.\.venv\Scripts\python.exe -m match_context --scenario neutral --until-second 1500
+.\.venv\Scripts\python.exe -m match_context --scenario sterile --until-second 1500
+.\.venv\Scripts\python.exe -m match_context --scenario correction --until-second 1500
+.\.venv\Scripts\python.exe -m match_context --scenario correction --until-second 1600
+```
+
+The correction example retains the 1–0 score at second 1500 and reports 0–0 after the annulment becomes available at second 1565. The displayed clock is the last received event's availability time, which can be earlier than the requested second. Empty samples do not invent trends or turn undefined percentages into zero. Shot quality is a simulator heuristic, not calibrated xG.
 
 ## Run the connection probe
 

@@ -12,6 +12,9 @@ dependencies = ["pydantic==2.14.1"]
 [project.optional-dependencies]
 dev = ["pytest==9.1.1"]
 
+[project.scripts]
+match-context = "match_context.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

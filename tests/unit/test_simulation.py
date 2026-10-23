@@ -112,3 +112,7 @@ def test_stream_rejects_invalid_relationships(metadata, make_event, change):
 def test_unknown_scenario_is_rejected():
     with pytest.raises(ValueError, match="scenario"):
         generate_match("real-premier-league", 1)
+
+
+def test_neutral_shots_include_on_and_off_target_attempts(scenario_neutral):
+    assert {event.attributes.on_target for event in scenario_neutral.events if event.kind == "shot"} == {True, False}
