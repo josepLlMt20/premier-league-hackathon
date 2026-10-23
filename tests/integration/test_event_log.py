@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 
 import pytest
 
@@ -125,12 +126,12 @@ def test_sqlite_rolls_back_event_if_header_update_fails(tmp_path, metadata, make
     path = tmp_path / "atomic.sqlite3"
     log = SQLiteEventLog(path)
     log.register_match(metadata)
-    with sqlite3.connect(path) as connection:
+    with closing(sqlite3.connect(path)) as connection:
         connection.execute("CREATE TRIGGER reject_header BEFORE UPDATE ON matches BEGIN SELECT RAISE(ABORT, 'disk failure'); END")
     with pytest.raises(sqlite3.DatabaseError):
         log.append(make_event())
     assert log.head("match-1") == 0
-    with sqlite3.connect(path) as connection:
+    with closing(sqlite3.connect(path)) as connection:
         assert connection.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0
     log.close()
 

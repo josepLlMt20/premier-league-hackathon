@@ -10,7 +10,8 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 - Local Microsoft Foundry connection verified with Microsoft Agent Framework, Azure sign-in, a local function tool and a Pydantic structured response.
 - Four seeded 90-minute scenarios, immutable events, bounded snapshots, metrics, pattern detection and inspectable evidence are implemented with automated tests.
 - Persistent SQLite event history and resumable ingestion are implemented. An Azure Tables adapter shares the same contract and is tested offline through the real SDK.
-- The web application, three-agent workflow and Azure application deployment are **not implemented yet**. Live Azure storage verification is still pending.
+- The analyst/writer/reviewer workflow, scoped tools, claim validation and explicit factual fallback are implemented and tested offline, including the real Foundry SDK with a simulated transport. The new live agent smoke currently needs Azure reauthentication.
+- The web application and Azure application deployment are **not implemented yet**. Live Azure storage verification is still pending.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.
 
@@ -23,6 +24,7 @@ The connection probe is a small infrastructure check, not a demonstration of the
 - [Synthetic data and measurement definitions](docs/data-dictionary.md)
 - [Engine tests, independent review and implementation decisions](docs/engine-validation.md)
 - [Persistent ingestion: usage, tests and limits](docs/ingestion-validation.md)
+- [Agent workflow, validation and Foundry smoke status](docs/agents-validation.md)
 
 ## Run the match engine locally
 
@@ -30,7 +32,7 @@ Requires Python 3.13. No Azure account, credentials or model calls are needed fo
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-core-dev.lock
+.\.venv\Scripts\python.exe -m pip install -r requirements-agents-dev.lock
 .\.venv\Scripts\python.exe -m pip install --no-deps -e .
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe -m match_context --scenario main --until-second 1500
@@ -64,6 +66,33 @@ The first score is 1–0, the second is 0–0 after the correction, and the thir
 Add `--realtime --speed 30` to advance with wall time at 30 match seconds per real second; the default command advances immediately to the chosen point. The durable ingestion clock and the viewer's requested point are separate. Viewer playback controls will be implemented in the web application.
 
 The development lockfile includes the Azure SDK for offline adapter tests. SQLite itself uses Python's standard library. To install just the library with the Azure adapter, use `pip install -e '.[storage]'`; an existing `MatchEvents` table and a configured `TableClient` are required for live use. These commands create no Azure resources and make no model calls.
+
+## Inspect agent context
+
+The default command produces an explicitly identified, bilingual factual summary without model calls:
+
+```powershell
+.\.venv\Scripts\python.exe -m match_context.agent_cli --until-second 1500 --language es
+```
+
+After Azure sign-in and configuring the existing `.env` endpoint and deployment, use `--mode foundry` to make real model requests:
+
+```powershell
+.\.venv\Scripts\python.exe -m match_context.agent_cli --mode foundry --until-second 1500 --language es --depth simple
+.\.venv\Scripts\python.exe -m match_context.agent_cli --mode foundry --until-second 1500 --role commentator --language en
+```
+
+The output distinguishes `mode=foundry` from `mode=factual`, and `status=verified` from fallback or insufficient observations. It includes the request cutoff, accepted cards, resolved text, rejection codes and a concise usage trace. `--include-facts` includes the complete canonical fact registry. A failed local connection returns `foundry_startup_failed`; an in-request provider failure returns identified factual output.
+
+Requests are limited to seven model turns, eight requested tools, 1200 output tokens per model turn and a ten-second request deadline. Ordinary tests never call a model. The live test is a separate opt-in that consumes existing Azure quota:
+
+```powershell
+$env:RUN_FOUNDRY_LIVE = '1'
+.\.venv\Scripts\python.exe -m pytest tests/live/test_foundry.py -m live -q -s
+Remove-Item Env:RUN_FOUNDRY_LIVE
+```
+
+The full development environment is pinned in `requirements-agents-dev.lock`. `requirements-core-dev.lock` retains the smaller engine/storage environment; the full test suite now also needs the agent SDK dependencies. The historic connection-probe lockfile remains separate.
 
 ## Run the connection probe
 
