@@ -10,3 +10,6 @@ __pycache__/
 .azure/
 node_modules/
 web/dist/
+*.egg-info/
+build/
+dist/
