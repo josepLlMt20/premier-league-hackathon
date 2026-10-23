@@ -148,7 +148,6 @@ def validate_event(event: MatchEvent) -> None:
 def validate_stream(events: tuple[MatchEvent, ...], metadata: MatchMetadata) -> None:
     known: dict[str, MatchEvent] = {}
     rosters = {team.team_id: {p.player_id for p in team.players} for team in metadata.teams}
-    active = {team.team_id: {p.player_id for p in team.players[:11]} for team in metadata.teams}
     previous_available = -1
     scored_shots: set[str] = set()
     for expected_sequence, event in enumerate(events, 1):
@@ -159,17 +158,17 @@ def validate_stream(events: tuple[MatchEvent, ...], metadata: MatchMetadata) -> 
             raise ValueError("Duplicate event or non-monotonic availability")
         if event.team_id not in rosters or event.player_id is not None and event.player_id not in rosters[event.team_id]:
             raise ValueError("Unknown team or player")
-        if event.player_id is not None and event.kind != "correction" and event.player_id not in active[event.team_id]:
-            raise ValueError("Player is not active")
         attributes = event.attributes
-        if event.kind == "pass" and (attributes.recipient_id not in active[event.team_id] or attributes.recipient_id == event.player_id):
-            raise ValueError("Pass recipient must be a different active teammate")
+        if event.kind == "pass" and (attributes.recipient_id not in rosters[event.team_id] or attributes.recipient_id == event.player_id):
+            raise ValueError("Pass recipient must be a different teammate")
         if event.kind == "turnover" and (attributes.to_team_id not in rosters or attributes.to_team_id == event.team_id):
             raise ValueError("Turnover must transfer possession to the other team")
         if event.kind == "goal":
             shot = known.get(attributes.shot_event_id)
             if shot is None or shot.kind != "shot" or shot.team_id != event.team_id or not shot.attributes.on_target:
                 raise ValueError("Goal must reference an earlier on-target shot of the same team")
+            if event.occurred_second < shot.occurred_second:
+                raise ValueError("Goal cannot occur before its linked shot")
             if attributes.shot_event_id in scored_shots:
                 raise ValueError("A shot cannot score twice")
             scored_shots.add(attributes.shot_event_id)
@@ -177,13 +176,25 @@ def validate_stream(events: tuple[MatchEvent, ...], metadata: MatchMetadata) -> 
             target = known.get(attributes.target_event_id)
             if target is None or target.kind == "correction" or target.team_id != event.team_id:
                 raise ValueError("Correction must reference an earlier event of the same team and match")
+            if target.kind == "substitution":
+                raise ValueError("Substitution annulments are not supported")
+        known[event.event_id] = event
+        previous_available = event.available_second
+
+    # Availability controls knowledge; football time controls who was on the field.
+    # Sequence breaks ties when two actions have the same occurred timestamp.
+    active = {team.team_id: {p.player_id for p in team.players[:11]} for team in metadata.teams}
+    for event in sorted(events, key=lambda item: (item.occurred_second, item.sequence)):
+        if event.player_id is not None and event.kind != "correction" and event.player_id not in active[event.team_id]:
+            raise ValueError("Player is not active at the event occurrence time")
+        attributes = event.attributes
+        if event.kind == "pass" and attributes.recipient_id not in active[event.team_id]:
+            raise ValueError("Pass recipient must be an active teammate at occurrence time")
         if event.kind == "substitution":
             if attributes.replaced_player_id not in active[event.team_id] or attributes.replacement_player_id not in rosters[event.team_id] - active[event.team_id]:
                 raise ValueError("Substitution requires an active player and a bench replacement")
             active[event.team_id].remove(attributes.replaced_player_id)
             active[event.team_id].add(attributes.replacement_player_id)
-        known[event.event_id] = event
-        previous_available = event.available_second
 
 
 class GeneratedMatch(FrozenModel):

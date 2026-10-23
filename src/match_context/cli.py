@@ -43,9 +43,10 @@ def main(argv: list[str] | None = None) -> int:
         item = story.model_dump(mode="json")
         item["facts"] = [fact_registry[identifier].model_dump(mode="json") for identifier in story.fact_ids]
         stories.append(item)
+    requested_events = tuple(event for event in snapshot.known_events if start < event.sequence <= cutoff)
     report = {
         "synthetic": True,
-        "status": "factual" if len(snapshot.known_events) >= 10 else "insufficient",
+        "status": "factual" if len(requested_events) >= 10 or candidates else "insufficient",
         "match_id": match.metadata.match_id,
         "teams": [{"team_id": team.team_id, "name": team.name} for team in match.metadata.teams],
         "snapshot_id": snapshot.snapshot_id,

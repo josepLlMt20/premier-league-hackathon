@@ -111,3 +111,36 @@ def test_detection_includes_exact_thresholds_and_real_comparison_denominators(me
     assert {story.pattern: story.delta for story in stories} == {
         "high_recoveries": 2, "chance_quality": 30, "territorial_shift": 20,
     }
+
+
+def test_new_sequences_in_the_same_arrival_second_are_not_an_empty_interval(metadata, make_event):
+    rows = []
+    for second in list(range(10, 210, 20)) + [300] + list(range(310, 410, 10)) + [600]:
+        rows.append(make_event(sequence=len(rows)+1, occurred_second=second, available_second=second))
+    start = len(rows)
+    for kind in ("recovery", "recovery", "shot", "shot"):
+        rows.append(make_event(sequence=len(rows)+1, kind=kind, occurred_second=600, available_second=600,
+            start={"x": 70 if kind == "recovery" else 62.5, "y": 34}))
+    snapshot = build_snapshot(tuple(rows), len(rows), metadata)
+    request = ContextRequest(match_id=metadata.match_id, from_sequence=start, to_sequence=len(rows))
+    stories = detect_stories(snapshot, request)
+    assert {story.pattern: story.delta for story in stories} == {"high_recoveries": 2, "chance_quality": 30}
+
+
+def test_tied_candidates_have_stable_order_and_preference_only_changes_ranking(metadata, make_event):
+    rows = []
+    for second in list(range(10, 210, 20)) + [300] + list(range(310, 410, 10)):
+        rows.append(make_event(sequence=len(rows)+1, occurred_second=second, available_second=second))
+    for index, team in enumerate(("a", "a", "b", "b")):
+        second = 420 + index * 10
+        rows.append(make_event(sequence=len(rows)+1, kind="recovery", team_id=team, player_id=team+"1",
+            occurred_second=second, available_second=second, start={"x": 70 if team == "a" else 20, "y": 34}))
+    rows.append(make_event(sequence=len(rows)+1, kind="pressure", occurred_second=600, available_second=600))
+    snapshot = build_snapshot(tuple(rows), len(rows), metadata)
+    plain = detect_stories(snapshot, request_for(snapshot))
+    favored = detect_stories(snapshot, request_for(snapshot, favorite_team_id="b"))
+    assert [story.team_id for story in plain] == ["a", "b"]
+    assert [story.team_id for story in favored] == ["b", "a"]
+    assert {(s.story_id, s.delta, s.fact_ids, s.event_ids) for s in plain} == {
+        (s.story_id, s.delta, s.fact_ids, s.event_ids) for s in favored
+    }

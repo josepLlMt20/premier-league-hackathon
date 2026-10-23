@@ -13,11 +13,11 @@ def detect_stories(snapshot: BoundedSnapshot, request: ContextRequest) -> tuple[
         raise ValueError("Unknown favorite team")
     if request.from_sequence == request.to_sequence or snapshot.cutoff_second < 600:
         return ()
-    since = snapshot.known_events[request.from_sequence - 1].available_second if request.from_sequence else 0
+    received_in_request = tuple(event for event in snapshot.known_events if event.sequence > request.from_sequence)
     anchors = set(range(600, snapshot.cutoff_second + 1, 300)) | {snapshot.cutoff_second}
     stories = []
     for finish in sorted(anchors):
-        if finish <= since:
+        if not any(event.available_second <= finish for event in received_in_request):
             continue
         current = compute_facts(snapshot, 0, snapshot.cutoff, start_second=finish - 300, end_second=finish)
         previous = compute_facts(snapshot, 0, snapshot.cutoff, start_second=finish - 600, end_second=finish - 300)

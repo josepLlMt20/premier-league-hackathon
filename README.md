@@ -20,6 +20,7 @@ The connection probe is a small infrastructure check, not a demonstration of the
 - [Foundry setup and measured results](docs/readiness.md)
 - [Original connection probe result, 20 October 2026](docs/evidence/2026-10-20-foundry-smoke.json)
 - [Synthetic data and measurement definitions](docs/data-dictionary.md)
+- [Engine tests, independent review and implementation decisions](docs/engine-validation.md)
 
 ## Run the match engine locally
 

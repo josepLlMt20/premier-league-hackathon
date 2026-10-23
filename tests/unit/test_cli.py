@@ -30,6 +30,13 @@ def test_cli_empty_neutral_context_is_honest(capsys):
     assert "evidence" not in report
 
 
+def test_cli_empty_selected_interval_is_insufficient_even_after_a_long_match(capsys):
+    main(["--scenario", "main", "--from-second", "1500", "--until-second", "1500"])
+    report = json.loads(capsys.readouterr().out)
+    assert report["status"] == "insufficient"
+    assert report["stories"] == []
+
+
 @pytest.mark.parametrize("arguments", [["--until-second", "5401"], ["--from-second", "1600", "--until-second", "1500"]])
 def test_cli_rejects_invalid_clock_intervals(arguments):
     with pytest.raises(SystemExit) as error:

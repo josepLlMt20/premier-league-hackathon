@@ -89,3 +89,53 @@ def test_evidence_marks_annulled_events_and_includes_the_correction(metadata, ma
 def test_invalid_known_events_are_not_silently_filtered(metadata, make_event):
     with pytest.raises(ValueError):
         build_snapshot((make_event(match_id="foreign"),), 1, metadata)
+
+
+@pytest.mark.parametrize("late_player", ["actor", "recipient"])
+def test_late_pass_uses_the_lineup_at_occurrence_time(scenario_main, make_event, late_player):
+    metadata = scenario_main.metadata
+    substitution = make_event(match_id=metadata.match_id, kind="substitution", team_id="amber", player_id="amber-01",
+        occurred_second=100, available_second=100,
+        attributes={"replaced_player_id": "amber-01", "replacement_player_id": "amber-12"})
+    event = make_event(sequence=2, match_id=metadata.match_id, team_id="amber",
+        player_id="amber-01" if late_player == "actor" else "amber-02",
+        occurred_second=90, available_second=110,
+        attributes={"recipient_id": "amber-02" if late_player == "actor" else "amber-01", "completed": True})
+    snapshot = build_snapshot((substitution, event), 2, metadata)
+    assert snapshot.known_events[1] == event
+
+
+@pytest.mark.parametrize("player,occurred,valid", [
+    ("amber-01", 110, False), ("amber-12", 90, False), ("amber-12", 100, True),
+])
+def test_historical_lineup_validation_still_rejects_inactive_players(scenario_main, make_event, player, occurred, valid):
+    metadata = scenario_main.metadata
+    substitution = make_event(match_id=metadata.match_id, kind="substitution", team_id="amber", player_id="amber-01",
+        occurred_second=100, available_second=100,
+        attributes={"replaced_player_id": "amber-01", "replacement_player_id": "amber-12"})
+    event = make_event(sequence=2, match_id=metadata.match_id, team_id="amber", player_id=player,
+        occurred_second=occurred, available_second=110,
+        attributes={"recipient_id": "amber-02", "completed": True})
+    if valid:
+        assert build_snapshot((substitution, event), 2, metadata).cutoff == 2
+    else:
+        with pytest.raises(ValueError, match="active"):
+            build_snapshot((substitution, event), 2, metadata)
+
+
+def test_unsupported_substitution_annulment_is_rejected_explicitly(scenario_main, make_event):
+    metadata = scenario_main.metadata
+    substitution = make_event(match_id=metadata.match_id, kind="substitution", team_id="amber", player_id="amber-01",
+        occurred_second=100, available_second=100,
+        attributes={"replaced_player_id": "amber-01", "replacement_player_id": "amber-12"})
+    correction = make_event(sequence=2, match_id=metadata.match_id, kind="correction", team_id="amber", player_id=None,
+        occurred_second=110, available_second=110, attributes={"target_event_id": "e1", "action": "annul"})
+    with pytest.raises(ValueError, match="[Ss]ubstitution"):
+        build_snapshot((substitution, correction), 2, metadata)
+
+
+def test_goal_cannot_occur_before_its_linked_shot(metadata, make_event):
+    shot = make_event(kind="shot", occurred_second=100, available_second=100)
+    goal = make_event(sequence=2, kind="goal", occurred_second=90, available_second=110)
+    with pytest.raises(ValueError, match="shot"):
+        build_snapshot((shot, goal), 2, metadata)

@@ -4,7 +4,7 @@ All teams, players, event histories and results are fictional. This event-level 
 
 ## Events
 
-Events are immutable Pydantic models. Unknown fields, invalid coordinates, non-finite numbers, backwards availability, inconsistent periods and invalid identifiers are rejected. Complete histories also validate contiguous sequences, unique event IDs, player membership, active players, pass recipients, substitutions and references to earlier events of the same match and team.
+Events are immutable Pydantic models. Unknown fields, invalid coordinates, non-finite numbers, backwards availability, inconsistent periods and invalid identifiers are rejected. Complete histories also validate contiguous sequences, unique event IDs, player membership, active players, pass recipients, substitutions and references to earlier events of the same match and team. Lineups are reconstructed in occurrence order within the known prefix, using sequence as the tie-breaker: a pass that arrives after a substitution can still belong to a player who was active when it occurred. The first eleven roster entries are the starting lineup; remaining entries are bench players.
 
 | Field | Meaning |
 | --- | --- |
@@ -26,9 +26,9 @@ Metadata contains rosters and each team's attack direction for each period. Team
 | `turnover` | `to_team_id`, the opposing team. |
 | `pressure` | No extra attributes. Actor belongs to the team applying pressure. |
 | `shot` | `on_target`, `under_pressure`; event location is the shot origin. |
-| `goal` | `shot_event_id` identifies an earlier on-target shot by the same team. One shot cannot score twice. A goal is not a second shot. |
+| `goal` | `shot_event_id` identifies an earlier on-target shot by the same team; the goal cannot occur before that shot. One shot cannot score twice. A goal is not a second shot. |
 | `substitution` | `replaced_player_id`, `replacement_player_id`; one active player leaves and a rostered bench player enters. |
-| `correction` | `target_event_id`, `action=annul`; target must already exist. The original event remains in the log. Replacement corrections are outside this version. |
+| `correction` | `target_event_id`, `action=annul`; target must already exist. The original event remains in the log. Replacement corrections and substitution annulments are explicitly unsupported and rejected. |
 
 ## Reproducible scenarios
 
