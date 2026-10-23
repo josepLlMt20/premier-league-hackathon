@@ -111,10 +111,10 @@ Las fixtures completas y sus manifiestos permanecen en recursos privados del bac
 
 **Interfaces:** `EventLog.append(event: MatchEvent) -> bool` devuelve falso solo para un duplicado idéntico; `head(match_id: str) -> int`; `read_through(match_id: str, cutoff: int) -> tuple[MatchEvent, ...]`. `Ingestor.tick(match_id: str, available_second: int) -> int` añade únicamente el prefijo disponible. Un duplicado con contenido distinto produce `EventConflict`.
 
-- [ ] Escribir los casos de contrato para ambos adaptadores: insertar dos veces no duplica; conflicto no muta; reiniciar la instancia conserva el prefijo; paginación no omite eventos; `read_through(..., 10)` nunca devuelve 11; un evento inválido no avanza la cabecera. Ejecutar `python -m pytest tests/integration/test_event_log.py tests/integration/test_azure_tables.py -q` con transporte falso del SDK Azure y confirmar fallo inicial.
-- [ ] Implementar SQLite con transacciones. En Azure usar tabla `MatchEvents`, `PartitionKey=match_id`, `RowKey` de doce dígitos para secuencia y una entidad de cabecera separada dentro de la partición. Crear evento y actualizar cabecera con ETag en una transacción. Consumir toda la paginación del SDK y aplicar filtros parametrizados por partición y cutoff. Resolver respuestas ambiguas leyendo la clave antes de repetir una escritura.
-- [ ] Implementar un único escritor de ingesta a velocidad 30x configurable, con estado persistente e inserción idempotente. Pausa, reinicio y velocidad de un espectador afectan su reproducción; no reinician el flujo compartido. Si la ingesta falla, detener avance y exponer último evento recibido. Repetir pruebas y confirmar PASS.
-- [ ] Commit: `feat: persist immutable event prefixes and replay ingestion`.
+- [x] Escribir los casos de contrato para ambos adaptadores: insertar dos veces no duplica; conflicto no muta; reiniciar la instancia conserva el prefijo; paginación no omite eventos; `read_through(..., 10)` nunca devuelve 11; un evento inválido no avanza la cabecera. Ejecutar `python -m pytest tests/integration/test_event_log.py tests/integration/test_azure_tables.py -q` con transporte falso del SDK Azure y confirmar fallo inicial.
+- [x] Implementar SQLite con transacciones. En Azure usar tabla `MatchEvents`, `PartitionKey=match_id`, `RowKey` de doce dígitos para secuencia y una entidad de cabecera separada dentro de la partición. Crear evento y actualizar cabecera con ETag en una transacción. Consumir toda la paginación del SDK y aplicar filtros parametrizados por partición y cutoff. Resolver respuestas ambiguas leyendo la clave antes de repetir una escritura.
+- [x] Implementar un único escritor de ingesta a velocidad 30x configurable, con estado persistente e inserción idempotente. Pausa, reinicio y velocidad de un espectador afectan su reproducción; no reinician el flujo compartido. Si la ingesta falla, detener avance y exponer último evento recibido. Repetir pruebas y confirmar PASS.
+- [x] Commit: `feat: persist immutable event prefixes and replay ingestion`.
 
 ## Task 3: Instantáneas, métricas y evidencia temporal
 
@@ -210,3 +210,5 @@ La cobertura de las secciones 1 a 4 de la especificación está en tareas 5 a 7;
 ## Revisión y método de ejecución
 
 El 23 de octubre el participante autorizó implementar el generador y el motor de métricas y evidencia. Esta entrega ejecutó directamente las tareas 1 y 3, con el prerrequisito mínimo de empaquetado Python, en la carpeta actual y una rama nueva elegida por el participante. La revisión independiente y las comprobaciones se registran en `docs/engine-validation.md`. Las demás tareas permanecen pendientes; su estado no se infiere de la conexión Foundry ni de esta entrega local.
+
+El participante autorizó después la tarea 2, en una rama nueva y con otra PR tras las pruebas. SQLite, el adaptador Azure Tables probado con transporte simulado y la ingesta reanudable están implementados; las comprobaciones y límites se registran en `docs/ingestion-validation.md`. La persistencia en Azure real sigue pendiente del despliegue.

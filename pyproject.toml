@@ -11,9 +11,11 @@ dependencies = ["pydantic==2.14.1"]
 
 [project.optional-dependencies]
 dev = ["pytest==9.1.1"]
+storage = ["azure-data-tables==12.7.0"]
 
 [project.scripts]
 match-context = "match_context.cli:main"
+match-ingest = "match_context.ingest_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -9,7 +9,8 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 - Product design and implementation plan documented.
 - Local Microsoft Foundry connection verified with Microsoft Agent Framework, Azure sign-in, a local function tool and a Pydantic structured response.
 - Four seeded 90-minute scenarios, immutable events, bounded snapshots, metrics, pattern detection and inspectable evidence are implemented with automated tests.
-- The web application, persistent event ingestion, three-agent workflow and Azure application deployment are **not implemented yet**.
+- Persistent SQLite event history and resumable ingestion are implemented. An Azure Tables adapter shares the same contract and is tested offline through the real SDK.
+- The web application, three-agent workflow and Azure application deployment are **not implemented yet**. Live Azure storage verification is still pending.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.
 
@@ -21,6 +22,7 @@ The connection probe is a small infrastructure check, not a demonstration of the
 - [Original connection probe result, 20 October 2026](docs/evidence/2026-10-20-foundry-smoke.json)
 - [Synthetic data and measurement definitions](docs/data-dictionary.md)
 - [Engine tests, independent review and implementation decisions](docs/engine-validation.md)
+- [Persistent ingestion: usage, tests and limits](docs/ingestion-validation.md)
 
 ## Run the match engine locally
 
@@ -46,6 +48,22 @@ Try the neutral and sterile scenarios, then compare a correction before and afte
 ```
 
 The correction example retains the 1–0 score at second 1500 and reports 0–0 after the annulment becomes available at second 1565. The displayed clock is the last received event's availability time, which can be earlier than the requested second. Empty samples do not invent trends or turn undefined percentages into zero. Shot quality is a simulator heuristic, not calibrated xG.
+
+## Replay a match into persistent storage
+
+After the local installation above, these commands use the same SQLite file across separate processes:
+
+```powershell
+.\.venv\Scripts\python.exe -m match_context.ingest_cli --database tmp/demo.sqlite3 --scenario correction --until-second 1500
+.\.venv\Scripts\python.exe -m match_context.ingest_cli --database tmp/demo.sqlite3 --scenario correction --until-second 1600
+.\.venv\Scripts\python.exe -m match_context.ingest_cli --database tmp/demo.sqlite3 --scenario correction --until-second 1600 --view-second 1500
+```
+
+The first score is 1–0, the second is 0–0 after the correction, and the third view still reports the earlier 1–0. Repeating a command adds no duplicate events. Ingestion cannot rewind; use `--view-second` to inspect earlier history, or choose a new database for a fresh shared stream.
+
+Add `--realtime --speed 30` to advance with wall time at 30 match seconds per real second; the default command advances immediately to the chosen point. The durable ingestion clock and the viewer's requested point are separate. Viewer playback controls will be implemented in the web application.
+
+The development lockfile includes the Azure SDK for offline adapter tests. SQLite itself uses Python's standard library. To install just the library with the Azure adapter, use `pip install -e '.[storage]'`; an existing `MatchEvents` table and a configured `TableClient` are required for live use. These commands create no Azure resources and make no model calls.
 
 ## Run the connection probe
 
