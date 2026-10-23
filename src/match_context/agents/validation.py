@@ -20,6 +20,9 @@ def check_claim(claim: Claim, tools) -> tuple[str, ...]:
     if claim.kind == "interpretation" and not claim.limitations:
         codes.add("missing_limitation")
     for text in (claim.text, *claim.limitations):
+        # Check the original as well: Roman numeric symbols can normalize to letters.
+        if any(character.isnumeric() for character in MARKER.sub("", text)):
+            codes.add("free_number")
         text = unicodedata.normalize("NFKC", text)
         markers = MARKER.findall(text)
         for kind, identifier in markers:
@@ -30,7 +33,7 @@ def check_claim(claim: Claim, tools) -> tuple[str, ...]:
         free = MARKER.sub("", text)
         if "{{" in free or "}}" in free:
             codes.add("invalid_marker")
-        if re.search(r"\d", free):
+        if any(character.isnumeric() for character in free):
             codes.add("free_number")
         if any(name.casefold() in free.casefold() for name in tools.entities.values()):
             codes.add("raw_entity")

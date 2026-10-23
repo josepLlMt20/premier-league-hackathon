@@ -2,15 +2,60 @@
 
 import asyncio
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 import json
 import os
 from pathlib import Path
 
 from agent_framework import Agent, ChatMiddleware, tool
+from agent_framework.exceptions import ChatClientException
+import httpx2
+from pydantic import ValidationError
 
 from .base import AgentOutput
 
 TOOL_NAMES = {"list_candidates", "read_facts", "inspect_events"}
+ACTIVE_BUDGET = ContextVar("foundry_request_budget", default=None)
+
+
+class FoundryOutput(AgentOutput):
+    """Azure's generation schema is narrower than local Pydantic validation."""
+
+    @classmethod
+    def model_json_schema(cls, *args, **kwargs):
+        schema = super().model_json_schema(*args, **kwargs)
+        unsupported = {"maxItems", "minItems", "maxLength", "minLength", "pattern", "format", "default",
+                       "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "uniqueItems"}
+
+        def clean(node):
+            if isinstance(node, dict):
+                for key in list(node):
+                    if key in unsupported:
+                        del node[key]
+                    elif key in ("properties", "$defs"):
+                        for child in node[key].values():
+                            clean(child)
+                    else:
+                        clean(node[key])
+            elif isinstance(node, list):
+                for child in node:
+                    clean(child)
+        clean(schema)
+        return schema
+
+
+async def capture_usage(response):
+    """Read aggregate usage before SDK structured parsing can raise; keep no body."""
+    budget = ACTIVE_BUDGET.get()
+    if budget is None:
+        return
+    await response.aread()
+    try:
+        usage = response.json().get("usage") or {}
+    except (ValueError, AttributeError):
+        return
+    budget.input_tokens += int(usage.get("input_tokens", 0))
+    budget.output_tokens += int(usage.get("output_tokens", 0))
 
 
 class BudgetMiddleware(ChatMiddleware):
@@ -21,9 +66,6 @@ class BudgetMiddleware(ChatMiddleware):
         self.budget.reserve_model()
         await call_next()
         response = context.result
-        usage = response.usage_details or {}
-        self.budget.input_tokens += int(usage.get("input_token_count", 0))
-        self.budget.output_tokens += int(usage.get("output_token_count", 0))
         # Reserve all requested calls before execution, including unknown tools or
         # invalid arguments. The exposed wrappers do not charge those calls again.
         for message in response.messages:
@@ -67,9 +109,14 @@ story_id. For rejection use allowed codes; for acceptance codes must be empty. N
 class FoundryRunner:
     mode = "foundry"
 
-    def __init__(self, client):
+    def __init__(self, client, *, http_client=None):
         self.client = client
-        self.client.client = self.client.client.with_options(max_retries=0, timeout=10)
+        self._original_client = client.client
+        self._http_client = http_client or httpx2.AsyncClient(timeout=10)
+        if capture_usage not in self._http_client.event_hooks["response"]:
+            self._http_client.event_hooks["response"].append(capture_usage)
+        self.client.client = self._original_client.with_options(max_retries=0, timeout=10,
+                                                               http_client=self._http_client)
 
     async def run(self, role, payload, tools):
         if role not in INSTRUCTIONS:
@@ -97,17 +144,32 @@ class FoundryRunner:
         # No conversation ID, previous response ID, session reuse, hosted tools or
         # search. All role handoffs are explicit request-local typed payloads.
         timeout = budget.remaining()
-        response = await asyncio.wait_for(agent.run(json.dumps(payload, ensure_ascii=False), options={
-            "response_format": AgentOutput, "max_tokens": budget.limits.output_tokens,
-            "reasoning": {"effort": "minimal"}, "store": False, "allow_multiple_tool_calls": False,
-        }), timeout=timeout)
+        token = ACTIVE_BUDGET.set(budget)
+        try:
+            try:
+                response = await asyncio.wait_for(agent.run(json.dumps(payload, ensure_ascii=False), options={
+                    "response_format": FoundryOutput, "max_tokens": budget.limits.output_tokens,
+                    "reasoning": {"effort": "minimal"}, "store": False, "allow_multiple_tool_calls": False,
+                }), timeout=timeout)
+            except ChatClientException as error:
+                cause = error.__cause__ or error.__context__
+                if isinstance(cause, (ValidationError, json.JSONDecodeError)):
+                    raise ValueError("invalid_output") from None
+                raise
+        finally:
+            ACTIVE_BUDGET.reset(token)
         if not isinstance(response.value, AgentOutput):
             raise ValueError("Provider did not return validated AgentOutput")
         return response.value
 
     async def close(self):
-        await self.client.client.close()
-        await self.client.project_client.close()
+        try:
+            await self.client.client.close()
+        finally:
+            try:
+                await self._original_client.close()
+            finally:
+                await self.client.project_client.close()
 
 
 @asynccontextmanager
@@ -138,7 +200,11 @@ async def local_foundry_runner():
         runner = FoundryRunner(client)
         yield runner
     finally:
-        if runner is not None:
-            await runner.close()
-        await credential.close()
-        os.environ["PATH"] = old_path
+        try:
+            if runner is not None:
+                await runner.close()
+        finally:
+            try:
+                await credential.close()
+            finally:
+                os.environ["PATH"] = old_path

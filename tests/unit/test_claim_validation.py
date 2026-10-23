@@ -88,3 +88,13 @@ def test_interpretation_limitations_survive_public_rendering(scoped):
                                                       "limitations": ("No hay seguimiento continuo de posiciones.",)})
     card = render_card(draft.model_copy(update={"explanation": explanation}), scoped, story, "es")
     assert "No hay seguimiento continuo de posiciones." in card.limitations
+
+
+@pytest.mark.parametrize("number", ["௲", "Ⅹ", "①", "½"])
+@pytest.mark.parametrize("in_limitation", [False, True])
+def test_numeric_symbols_are_rejected_in_text_and_limitations(scoped, number, in_limitation):
+    claim = Claim(claim_id="numeric", kind="observed",
+                  text="Observación acotada." if in_limitation else f"Han marcado {number} goles.",
+                  fact_ids=(scoped.facts[0].fact_id,),
+                  limitations=(f"Solo {number} observaciones.",) if in_limitation else ())
+    assert "free_number" in check_claim(claim, scoped)

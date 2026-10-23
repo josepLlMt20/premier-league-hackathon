@@ -42,9 +42,10 @@ def test_real_sdk_counts_every_model_turn_and_keeps_requests_isolated(scenario_m
         client = FoundryChatClient(project_endpoint="https://offline.services.ai.azure.com/api/projects/test",
                                     model="offline", credential=lambda: "offline")
         await client.client.close()
+        http_client = httpx2.AsyncClient(transport=httpx2.MockTransport(respond))
         client.client = AsyncOpenAI(api_key="offline", base_url="https://offline.invalid/v1/", max_retries=0,
-                                    http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(respond)))
-        runner = FoundryRunner(client)
+                                    http_client=http_client)
+        runner = FoundryRunner(client, http_client=http_client)
         try:
             result = await runner.run("analyst", {"cutoff": cutoff, "sentinel": "first-request"}, tools)
             assert result.selected_story_ids == (selected,)
@@ -58,9 +59,70 @@ def test_real_sdk_counts_every_model_turn_and_keeps_requests_isolated(scenario_m
             assert fresh.budget.model_calls == 1
             assert all(body["max_output_tokens"] == 1200 and body["store"] is False for body in requests)
             assert all("previous_response_id" not in body and "conversation" not in body for body in requests)
+            unsupported = {"maxItems", "minItems", "maxLength", "minLength", "pattern", "default",
+                           "minimum", "maximum", "format", "multipleOf"}
+
+            def check_schema(node):
+                if isinstance(node, dict):
+                    assert not (set(node) & unsupported)
+                    for child in node.values():
+                        check_schema(child)
+                elif isinstance(node, list):
+                    for child in node:
+                        check_schema(child)
+            for body in requests:
+                check_schema(body["text"]["format"]["schema"])
         finally:
             await runner.close()
 
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("bad_text", ["{bad json", '{"selected_story_ids":[],"cards":"invalid","decisions":[]}'])
+def test_sdk_output_parse_failure_is_repaired_and_keeps_all_reported_usage(scenario_main, bad_text):
+    from match_context.agents.base import AgentOutput, ReviewDecision
+    from match_context.agents.orchestrator import orchestrate
+    from .agent_helpers import draft_for
+    sent = []
+
+    async def run():
+        snapshot = build_snapshot(scenario_main.events, 269, scenario_main.metadata)
+        request = ContextRequest(match_id=snapshot.metadata.match_id, from_sequence=0, to_sequence=269)
+        tools = prepare_tools(snapshot, request)
+        candidate = tools.candidates[0]
+        draft = draft_for(tools.story_payload(candidate))
+        outputs = [AgentOutput(selected_story_ids=(candidate.story_id,)).model_dump_json(), bad_text,
+                   AgentOutput(cards=(draft,)).model_dump_json(),
+                   AgentOutput(decisions=(ReviewDecision(story_id=candidate.story_id, accepted=True),)).model_dump_json()]
+
+        async def respond(http_request):
+            text = outputs[len(sent)]
+            sent.append(http_request)
+            return httpx2.Response(200, json={"id": f"r{len(sent)}", "object": "response", "created_at": 1,
+                                           "status": "completed", "model": "offline",
+                                           "output": [{"type": "message", "id": f"msg{len(sent)}", "role": "assistant",
+                                                       "status": "completed", "content": [{"type": "output_text",
+                                                       "text": text, "annotations": []}]}],
+                                           "usage": {"input_tokens": 19, "output_tokens": 7, "total_tokens": 26}})
+
+        client = FoundryChatClient(project_endpoint="https://offline.services.ai.azure.com/api/projects/test",
+                                    model="offline", credential=lambda: "offline")
+        await client.client.close()
+        http_client = httpx2.AsyncClient(transport=httpx2.MockTransport(respond))
+        client.client = AsyncOpenAI(api_key="offline", base_url="https://offline.invalid/v1/", max_retries=0,
+                                    http_client=http_client)
+        runner = FoundryRunner(client, http_client=http_client)
+        try:
+            result = await orchestrate(snapshot, request, runner)
+            assert len(sent) == 4
+            assert result.status == "verified"
+            assert result.trace.model_calls == 4
+            assert result.trace.input_tokens == 76
+            assert result.trace.output_tokens == 28
+            assert any(step.decision == "repair_requested" for step in result.trace.steps)
+            assert bad_text not in result.model_dump_json()
+        finally:
+            await runner.close()
     asyncio.run(run())
 
 
@@ -84,14 +146,61 @@ def test_model_budget_stops_the_next_network_turn(scenario_main):
         client = FoundryChatClient(project_endpoint="https://offline.services.ai.azure.com/api/projects/test",
                                     model="offline", credential=lambda: "offline")
         await client.client.close()
+        http_client = httpx2.AsyncClient(transport=httpx2.MockTransport(respond))
         client.client = AsyncOpenAI(api_key="offline", base_url="https://offline.invalid/v1/", max_retries=0,
-                                    http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(respond)))
+                                    http_client=http_client)
+        runner = FoundryRunner(client, http_client=http_client)
         try:
             with pytest.raises(BudgetExceeded):
-                await FoundryRunner(client).run("analyst", {"cutoff": 269}, tools)
+                await runner.run("analyst", {"cutoff": 269}, tools)
             assert len(sent) == 1
         finally:
-            await client.client.close()
-            await client.project_client.close()
+            await runner.close()
 
+    asyncio.run(run())
+
+
+def test_provider_wire_schema_retains_strict_local_output_limits():
+    from match_context.agents.foundry import FoundryOutput
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
+        FoundryOutput.model_validate({"selected_story_ids": ["a", "b", "c", "d"]})
+
+
+def test_concurrent_sdk_calls_keep_usage_and_inputs_request_local(scenario_main):
+    async def run():
+        snapshot = build_snapshot(scenario_main.events, 269, scenario_main.metadata)
+        request = ContextRequest(match_id=snapshot.metadata.match_id, from_sequence=0, to_sequence=269)
+        first, second = prepare_tools(snapshot, request), prepare_tools(snapshot, request)
+        bodies = []
+
+        async def respond(http_request):
+            raw = http_request.content.decode()
+            bodies.append(raw)
+            assert not ("viewer_one" in raw and "viewer_two" in raw)
+            one = "viewer_one" in raw
+            await asyncio.sleep(0.01)
+            return httpx2.Response(200, json={"id": "r-one" if one else "r-two", "object": "response",
+                "created_at": 1, "status": "completed", "model": "offline",
+                "output": [{"type": "message", "id": "msg-one" if one else "msg-two", "role": "assistant",
+                            "status": "completed", "content": [{"type": "output_text", "annotations": [],
+                            "text": json.dumps({"selected_story_ids": [first.candidates[0].story_id],
+                                                "cards": [], "decisions": []})}]}],
+                "usage": {"input_tokens": 19 if one else 31, "output_tokens": 7 if one else 11,
+                          "total_tokens": 26 if one else 42}})
+
+        client = FoundryChatClient(project_endpoint="https://offline.services.ai.azure.com/api/projects/test",
+                                    model="offline", credential=lambda: "offline")
+        await client.client.close()
+        http_client = httpx2.AsyncClient(transport=httpx2.MockTransport(respond))
+        client.client = AsyncOpenAI(api_key="offline", base_url="https://offline.invalid/v1/", http_client=http_client)
+        runner = FoundryRunner(client, http_client=http_client)
+        try:
+            await asyncio.gather(runner.run("analyst", {"sentinel": "viewer_one"}, first),
+                                 runner.run("analyst", {"sentinel": "viewer_two"}, second))
+            assert (first.budget.model_calls, first.budget.input_tokens, first.budget.output_tokens) == (1, 19, 7)
+            assert (second.budget.model_calls, second.budget.input_tokens, second.budget.output_tokens) == (1, 31, 11)
+            assert len(bodies) == 2
+        finally:
+            await runner.close()
     asyncio.run(run())
