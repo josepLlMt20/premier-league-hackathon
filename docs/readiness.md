@@ -25,6 +25,8 @@ El participante asignó `Foundry User` a su cuenta sobre el recurso y confirmó 
 - `.env` local contiene únicamente el endpoint y el nombre de implementación. `.env` y `tmp/` están excluidos de Git.
 - Script provisional: `tmp/foundry-connection/smoke_foundry.py`; resultado: `tmp/foundry-connection/smoke-result.json`. Ambos son artefactos locales ignorados.
 
+El 23 de octubre se preparó una copia reproducible para GitHub: `scripts/check_foundry_connection.py`, `requirements-foundry-probe.txt` y `docs/evidence/2026-10-20-foundry-smoke.json`. El script conserva la prueba original y ajusta las rutas a su ubicación versionada; sus nuevas ejecuciones escriben el resultado en `tmp/`. El README explica cómo reconstruir las herramientas y autenticarse en otro ordenador.
+
 ## Resultado real
 
 La ejecución de `tmp/foundry-connection/venv/Scripts/python.exe tmp/foundry-connection/smoke_foundry.py` terminó con código 0 y `status=passed`.

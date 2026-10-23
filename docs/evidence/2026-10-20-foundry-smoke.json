@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "model_deployment": "gpt-5-mini",
+  "tool_calls": 1,
+  "elapsed_seconds": 7.587,
+  "result": {
+    "cutoff": 2,
+    "shots": 1,
+    "goals": 0,
+    "evidence_ids": [
+      "e1",
+      "e2"
+    ]
+  },
+  "usage": {
+    "total_token_count": 679,
+    "openai.cache_write_tokens": 0,
+    "cache_creation_input_token_count": 0,
+    "output_token_count": 68,
+    "cache_read_input_token_count": 0,
+    "input_token_count": 611,
+    "openai.reasoning_tokens": 0,
+    "openai.cached_input_tokens": 0,
+    "reasoning_output_token_count": 0
+  },
+  "scope": "Connection probe only; not the product spoiler evaluation"
+}
