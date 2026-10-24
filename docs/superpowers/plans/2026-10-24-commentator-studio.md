@@ -56,4 +56,4 @@
 - [x] Test actual HTTP/SQLite flow in explicit scripted mode: both roles share selected match/time and evidence, serialized exports retain cutoffs/score, switching role invalidates old output, rejected/factual exports unavailable, trace truthful, desktop/mobile axe/reflow/keyboard.
 - [x] Inspect actual in-app browser and capture desktop/mobile/professional overlay/evidence. Use clearly labeled scripted preview for accepted cards; retain the factual preview without silently enabling Azure calls.
 - [x] Run full frontend suite plus existing fan journeys; record results. Backend production unchanged; retain its freshly verified255-test baseline unless new backend changes justify rerun.
-- [ ] Obtain one independent whole-branch review; fix material findings in one regression-tested pass. Commit/push and create/attach the PR; show real captures, keep preview available, do not merge.
+- [x] Obtain one independent whole-branch review; fix material findings in one regression-tested pass. Commit/push and create/attach the PR; show real captures, keep preview available, do not merge.
