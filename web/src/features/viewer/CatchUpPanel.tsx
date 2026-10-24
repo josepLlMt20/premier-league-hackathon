@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { NativeSelect } from '../../components/ui/native-select';
 import { Status } from '../../components/Status';
+import { ArrowRightLineIcon, SettingsLineIcon, TargetLineIcon } from '../../components/icons';
 export function CatchUpPanel({
   state,
   metadata,
@@ -40,7 +41,10 @@ export function CatchUpPanel({
     <Card className="catchup-panel">
       <section aria-labelledby="catchup-heading">
         <div className="window-bar">
-          <span>Match Context</span>
+          <span className="recap-heading">
+            <TargetLineIcon aria-hidden="true" />
+            {t.recapTitle}
+          </span>
           <span className="window-dot" aria-hidden="true" />
         </div>
         <div className="catchup-body">
@@ -67,7 +71,11 @@ export function CatchUpPanel({
             </p>
           </div>
           <details className="preferences">
-            <summary>{t.personalize}</summary>
+            <summary>
+              <SettingsLineIcon aria-hidden="true" />
+              {t.personalize}
+              <ArrowRightLineIcon className="disclosure-arrow" aria-hidden="true" />
+            </summary>
             <div className="preference-fields">
               <label htmlFor="language">
                 {t.language}
@@ -133,6 +141,7 @@ export function CatchUpPanel({
             onClick={generate}
           >
             {loading ? t.generating : t.action}
+            <ArrowRightLineIcon className="action-arrow" aria-hidden="true" />
           </Button>
           {loading && (
             <Button variant="secondary" className="cancel-action" onClick={cancel}>
@@ -151,7 +160,7 @@ export function CatchUpPanel({
           )}
           {!result && !loading && !error && <p className="recap-empty">{t.ready}</p>}
           {result && (
-            <div className="recap-result" aria-live="polite">
+            <div key={state.requestKey} className="recap-result" aria-live="polite">
               <Badge>
                 {result.mode === 'scripted'
                   ? t.scripted
@@ -169,6 +178,7 @@ export function CatchUpPanel({
                   variant="outline"
                   onClick={(event) => openEvidence(undefined, event.currentTarget)}
                 >
+                  <TargetLineIcon aria-hidden="true" />
                   {t.evidence}
                 </Button>
               )}

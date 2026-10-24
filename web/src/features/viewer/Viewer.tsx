@@ -17,6 +17,8 @@ import {
 } from '../../domain/playback';
 import { copy } from '../../domain/copy';
 import { Pitch } from '../../components/Pitch';
+import { Scoreboard } from '../../components/Scoreboard';
+import { FootballLineIcon } from '../../components/icons';
 import { Timeline } from '../../components/Timeline';
 import { Status } from '../../components/Status';
 import { Card } from '../../components/ui/card';
@@ -45,6 +47,8 @@ export function Viewer({
     [contextError, setContextError] = useState<string | null>(null);
   const [storyId, setStoryId] = useState<string | undefined>();
   const [evidenceSelected, setEvidenceSelected] = useState(false);
+  const [animateEvent, setAnimateEvent] = useState(false);
+  const seenEvent = useRef<string | null>(null);
   const currentKey = useRef(state.requestKey);
   currentKey.current = state.requestKey;
   const generation = useRef<AbortController | null>(null),
@@ -100,7 +104,12 @@ export function Viewer({
         return fetchView(metadata.match_id, cursor.to_sequence, controller.signal);
       })
       .then((view) => {
-        if (view && active && currentKey.current === key) dispatch({ type: 'view', view, key });
+        if (view && active && currentKey.current === key) {
+          const id = view.recent_events.at(-1)?.event_id || null;
+          setAnimateEvent(!!id && id !== seenEvent.current);
+          seenEvent.current = id;
+          dispatch({ type: 'view', view, key });
+        }
       })
       .catch(() => {
         if (active && currentKey.current === key) setViewError(true);
@@ -172,49 +181,39 @@ export function Viewer({
         <Card className="match-panel">
           <section aria-label={t.match}>
             <div className="window-bar">
-              <span>
+              <span className="replay-label">
+                <FootballLineIcon aria-hidden="true" />
                 {t.watching} <strong className="mono">{clock(state.second)}</strong>
               </span>
               <Badge>{state.playing ? (state.view ? t.playing : t.buffering) : t.paused}</Badge>
             </div>
-            {viewError ? (
-              <Status
+            <div
+              data-testid={state.view && !viewError ? 'match-view' : undefined}
+              data-cutoff={state.view?.cutoff_sequence}
+            >
+              <Scoreboard
+                metadata={metadata}
+                view={viewError ? null : state.view}
+                second={state.second}
                 language={state.preferences.language}
-                error
-                retry={() => setAttempt((n) => n + 1)}
-              >
-                {t.unavailable}
-              </Status>
-            ) : state.view ? (
-              <div data-testid="match-view" data-cutoff={state.view.cutoff_sequence}>
-                <div className="scoreboard">
-                  <span className="team home-team">
-                    <span className="team-monogram" aria-hidden="true">
-                      {metadata.teams[0].name.slice(0, 1)}
-                    </span>
-                    <strong>{metadata.teams[0].name}</strong>
-                  </span>
-                  <strong className="score mono" data-testid="score">
-                    {metadata.teams
-                      .map(
-                        (team) =>
-                          state.view!.score.find((score) => score.team_id === team.team_id)
-                            ?.goals ?? 0,
-                      )
-                      .join(' – ')}
-                  </strong>
-                  <span className="team away-team">
-                    <span className="team-monogram" aria-hidden="true">
-                      {metadata.teams[1].name.slice(0, 1)}
-                    </span>
-                    <strong>{metadata.teams[1].name}</strong>
-                  </span>
-                </div>
-                <Pitch view={state.view} language={state.preferences.language} />
-              </div>
-            ) : (
-              <Status language={state.preferences.language}>{t.loading}</Status>
-            )}
+              />
+              {viewError ? (
+                <Status
+                  language={state.preferences.language}
+                  error
+                  retry={() => setAttempt((n) => n + 1)}
+                >
+                  {t.unavailable}
+                </Status>
+              ) : (
+                <Pitch
+                  view={state.view}
+                  metadata={metadata}
+                  language={state.preferences.language}
+                  animateEvent={animateEvent}
+                />
+              )}
+            </div>
             {head && (
               <PlaybackControls
                 state={state}
@@ -236,7 +235,11 @@ export function Viewer({
               <p className="caption ingestion-note">{t.complete}</p>
             )}
             {state.view && !viewError && (
-              <Timeline view={state.view} language={state.preferences.language} />
+              <Timeline
+                view={state.view}
+                language={state.preferences.language}
+                onSeek={(second) => dispatch({ type: 'seek', second })}
+              />
             )}
           </section>
         </Card>

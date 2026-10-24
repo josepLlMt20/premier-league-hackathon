@@ -28,3 +28,13 @@ Run the commands in [web validation](docs/web-validation.md). Check the rendered
 The spacing tool's inferred card padding includes a full-width window border, while content padding lives in inner bodies. Its default scale also flags the installed kit's 6/20/28px values and fluid auto margins. Evaluate those measurements against the actual source and screenshot rather than turning the window chrome into a padded nested card. Record unresolved functional findings; never substitute tool scores for visual inspection or real user testing.
 
 MingCute and Inter license notices are bundled under `web/public/licenses/`. No league/team logos, real match feed, copyrighted music or real player imagery are used.
+
+## Personality pass (24 October)
+
+The user requested a less generic, more lively interface within the chosen Heyclicky direction. Refine the existing PR rather than replacing the system: a compact sports scoreboard, fictional club initials with team colors, recognizable football/action icons, three recent-action shortcuts and a calmer, shorter introduction. Keep the actual Heyclicky controls and surfaces.
+
+Tools considered: Motion/its Motion Primitives catalog (React state transitions), Rive (authored interactive illustrations), and native SVG/CSS. Choose native SVG/CSS for this bounded pass: no additional runtime or remote animation asset is necessary. Exact MingCute line SVGs are self-hosted; the existing Apache license applies. Better Design supplied hierarchy/motion guidance and references, then exhausted its free query quota. Later review uses rendered Chromium evidence and the already retrieved rules; do not claim a new MCP review.
+
+Motion brief: show a recorded trajectory/location arriving in 450ms only when a different event is accepted; introduce a completed recap in 220ms; give press/hover feedback in150ms. All values remain exact and score changes are immediate. Never keep an outgoing snapshot for an exit animation. Interrupt by removing the current frame immediately on a seek; the neutral field and known team identities remain as a stable loading shell. Reduced motion shows the final static state, with no animation or looping activity. No inferred continuous player/ball tracking is added.
+
+Recent-action shortcuts use only the bounded view's last three events and seek to their **availability** time, so a late correction cannot be revealed at its earlier occurrence time. Existing full recent-event disclosure remains available. Static club marks are original typographic initials, not real club crests.

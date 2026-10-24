@@ -60,3 +60,15 @@ Review boundaries: unchanged backend chronology/storage/agent/HTTP behavior reta
 ## Licenses
 
 Heyclicky components and tokens were obtained through the user-selected [Better Design kit](https://better-design.com/design-systems/heyclicky). [MingCute source and Apache 2.0 license](https://github.com/mingcute-design/mingcute-icons/blob/main/LICENSE) and Inter's SIL Open Font License are copied to `web/public/licenses/` for distribution. npm package licenses remain with their dependencies. No real football assets are included.
+
+## Visual personality refinement
+
+The follow-up request asks for a deliberate, lively football interface. The refined scoreboard has a compact broadcast treatment and original typographic club marks; the selected Heyclicky controls remain. All four added action/football/settings/navigation SVGs come from the same MingCute line collection and are bundled locally.
+
+Native SVG/CSS was selected after comparing [Motion SVG animation](https://motion.dev/docs/react-svg-animation), [Rive's React runtime](https://github.com/rive-app/rive-react) and the available Motion Primitives catalog. Finite path/arrival, recap entrance and press/hover effects fit the current scope without another animation runtime. [Reduced motion](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion) renders the complete static result. Scores stay exact, and rewinds remove outgoing data immediately.
+
+The pitch and known team identities now stay mounted while a selected frame loads; the previous score, player and event do not. Three recent-action shortcuts come only from the bounded event tail and navigate by availability time, preserving delayed-correction chronology. Repeated reads of the same event do not replay its entrance cue.
+
+Refinement verification: **26 unit tests passed**, including correction availability and neutral loading; **10 real HTTP/SQLite browser tests passed in57.4seconds**, including normal/reduced motion and a rewind while the prior action could still be animating. Page/dialog axe scans remain clear on desktop/mobile, with320px reflow and existing temporal/network/storage checks retained. Build/types/format pass. The backend is unchanged; no model requests were made.
+
+Before/after screenshots at the same second1500 and1440/390 widths were captured and inspected. Additional rendered captures cover1728px. Better Design's free query quota was exhausted after obtaining principles/references, so this refinement uses the previously retrieved rules and actual browser measurements; **no new MCP review receipt is claimed**. User usefulness, other browsers/screen readers and real Foundry evaluation remain the stated later checks.

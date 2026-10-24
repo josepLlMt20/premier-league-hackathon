@@ -79,6 +79,23 @@ it('starts at zero and loads only cursor-bounded views', async () => {
   expect(api.fetchView).toHaveBeenCalledWith(metadata.match_id, 0, expect.any(AbortSignal));
   expect(api.requestContext).not.toHaveBeenCalled();
 });
+it('keeps a neutral pitch while a rewound frame loads, with no old player or score', async () => {
+  await ready();
+  await seek(400);
+  const pending = deferred<api.MatchView>();
+  vi.mocked(api.fetchView).mockReturnValueOnce(pending.promise);
+  fireEvent.change(screen.getByRole('slider', { name: 'Minuto del partido' }), {
+    target: { value: '0' },
+  });
+  await waitFor(() => expect(api.fetchView).toHaveBeenCalledTimes(3));
+  expect(screen.getByRole('img', { name: /Cargando el minuto/ })).toBeInTheDocument();
+  expect(screen.queryByText('Alex Reed')).not.toBeInTheDocument();
+  expect(screen.queryByTestId('score')).not.toBeInTheDocument();
+  expect(document.querySelector('.event-mark')).toBeNull();
+  await act(async () =>
+    pending.resolve({ ...view, cutoff_sequence: 0, snapshot_id: 'zero', recent_events: [] }),
+  );
+});
 it('aborts the later view and ignores it even if the transport still resolves', async () => {
   await ready();
   await seek(400);

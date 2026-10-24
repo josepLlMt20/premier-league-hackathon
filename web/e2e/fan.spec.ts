@@ -3,6 +3,52 @@ import AxeBuilder from '@axe-core/playwright';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import type { ContextResult, MatchView } from '../src/api/client';
 const output = '../tmp/ui-validation';
+test('event motion is finite, respects reduced motion and removes the previous event immediately on rewind', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  await expect(page.getByTestId('match-view')).toBeVisible();
+  const received = page.waitForResponse((r) => r.url().includes('/view?'));
+  await seek(page, 1500);
+  const bounded: MatchView = await (await received).json();
+  const pass = bounded.recent_events.find(
+    (event, index, events) =>
+      event.kind === 'pass' && events[index + 1]?.available_second > event.available_second + 1,
+  )!;
+  expect(pass).toBeDefined();
+  await seek(page, pass.available_second);
+  await expect(page.locator('.event-mark')).toHaveClass(/event-arriving/);
+  expect(
+    await page.locator('.trajectory').evaluate((el) => getComputedStyle(el).animationDuration),
+  ).toBe('0.45s');
+  await seek(page, pass.available_second + 1);
+  await expect(page.locator('.event-mark')).not.toHaveClass(/event-arriving/);
+  await seek(page, pass.available_second + 2);
+  await page.route('**/view?to_sequence=0', async (route) => {
+    const response = await route.fetch(),
+      body = await response.body();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.fulfill({ body, status: response.status(), headers: response.headers() });
+  });
+  await page.getByRole('slider', { name: 'Minuto del partido' }).evaluate((el) => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(el, '0');
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await expect(page.locator('.event-mark')).toHaveCount(0);
+  await expect(page.getByTestId('score')).toHaveCount(0);
+  await expect(page.getByRole('img', { name: /Cargando el minuto/ })).toBeVisible();
+  await expect(page.getByTestId('match-view')).toHaveAttribute('data-cutoff', '0');
+  await page.unroute('**/view?to_sequence=0');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await seek(page, pass.available_second);
+  expect(
+    await page.locator('.trajectory').evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe('none');
+  expect(
+    await page.locator('.trajectory').evaluate((el) => getComputedStyle(el).strokeDashoffset),
+  ).toBe('0px');
+});
 test('playback completes slow bounded reads without cancelling them on every tick', async ({
   page,
 }) => {

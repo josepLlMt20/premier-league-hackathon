@@ -57,3 +57,5 @@ export function CloseLineIcon(props: Props) {
     </svg>
   );
 }
+
+export { FootballLineIcon, TargetLineIcon, SettingsLineIcon, ArrowRightLineIcon } from './football';
