@@ -93,11 +93,17 @@ export function Viewer({
   }, [metadata.match_id]);
   useEffect(() => {
     if (!head) return;
+    if (state.pendingSecond == null && state.view) {
+      // Cancelling a failed automatic read returns to a valid committed frame.
+      setViewError(false);
+      return;
+    }
     const controller = new AbortController(),
       key = state.requestKey;
     let active = true;
     setViewError(false);
-    void resolveCursor(metadata.match_id, state.second, controller.signal)
+    const second = state.pendingSecond ?? state.second;
+    void resolveCursor(metadata.match_id, second, controller.signal)
       .then((cursor) => {
         if (!active || currentKey.current !== key) return null;
         return fetchView(metadata.match_id, cursor.to_sequence, controller.signal);
@@ -107,7 +113,7 @@ export function Viewer({
           const id = view.recent_events.at(-1)?.event_id || null;
           setAnimateEvent(!!id && id !== seenEvent.current);
           seenEvent.current = id;
-          dispatch({ type: 'view', view, key });
+          dispatch({ type: 'view', view, key, second });
         }
       })
       .catch(() => {
@@ -117,9 +123,9 @@ export function Viewer({
       active = false;
       controller.abort();
     };
-    // A newly polled head must not reload an already selected historical frame.
+    // A polled head or committed frame must not reload the selected moment.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata.match_id, state.requestKey, !!head, attempt]);
+  }, [metadata.match_id, state.requestKey, state.pendingSecond, !!head, attempt]);
   useEffect(() => {
     generation.current?.abort();
     setContextLoading(false);
@@ -173,7 +179,7 @@ export function Viewer({
       <div className="match-header">
         <Scoreboard
           metadata={metadata}
-          view={viewError ? null : state.view}
+          view={state.view}
           second={state.second}
           language={state.preferences.language}
         />
@@ -189,10 +195,16 @@ export function Viewer({
         <Card className="match-panel">
           <section aria-label={t.match}>
             <div
-              data-testid={state.view && !viewError ? 'match-view' : undefined}
+              data-testid={state.view ? 'match-view' : undefined}
               data-cutoff={state.view?.cutoff_sequence}
             >
-              {viewError ? (
+              <Pitch
+                view={state.view}
+                metadata={metadata}
+                language={state.preferences.language}
+                animateEvent={animateEvent}
+              />
+              {viewError && (
                 <Status
                   language={state.preferences.language}
                   error
@@ -200,13 +212,6 @@ export function Viewer({
                 >
                   {t.unavailable}
                 </Status>
-              ) : (
-                <Pitch
-                  view={state.view}
-                  metadata={metadata}
-                  language={state.preferences.language}
-                  animateEvent={animateEvent}
-                />
               )}
             </div>
             {head && (
@@ -230,7 +235,7 @@ export function Viewer({
             {head?.ingestion_state === 'complete' && (
               <p className="caption ingestion-note">{t.complete}</p>
             )}
-            {state.view && !viewError && (
+            {state.view && (
               <Timeline
                 view={state.view}
                 language={state.preferences.language}

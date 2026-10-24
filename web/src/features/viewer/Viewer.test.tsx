@@ -79,6 +79,37 @@ it('starts at zero and loads only cursor-bounded views', async () => {
   expect(api.fetchView).toHaveBeenCalledWith(metadata.match_id, 0, expect.any(AbortSignal));
   expect(api.requestContext).not.toHaveBeenCalled();
 });
+it('keeps score, pitch and timeline mounted during a delayed automatic frame, then commits the clock with the result', async () => {
+  await ready();
+  await seek(400);
+  const pending = deferred<api.MatchView>();
+  vi.mocked(api.fetchView).mockReturnValueOnce(pending.promise);
+  const score = screen.getByTestId('score');
+  const pitch = document.querySelector('.pitch');
+  const rail = screen.getByRole('group', { name: 'Últimas jugadas recibidas' });
+  vi.useFakeTimers();
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Reproducir' }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(api.fetchView).toHaveBeenCalledTimes(3);
+    expect(screen.getByTestId('score')).toBe(score);
+    expect(document.querySelector('.pitch')).toBe(pitch);
+    expect(screen.getByRole('group', { name: 'Últimas jugadas recibidas' })).toBe(rail);
+    expect(screen.getByTestId('playback-clock')).toHaveTextContent('06:40');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(api.fetchView).toHaveBeenCalledTimes(3);
+    await act(async () => pending.resolve(view));
+    expect(screen.getByTestId('playback-clock')).toHaveTextContent('06:41');
+    expect(screen.getByTestId('score')).toBe(score);
+    expect(document.querySelector('.pitch')).toBe(pitch);
+  } finally {
+    vi.useRealTimers();
+  }
+});
 it('keeps a neutral pitch while a rewound frame loads, with no old player or score', async () => {
   await ready();
   await seek(400);
@@ -95,6 +126,37 @@ it('keeps a neutral pitch while a rewound frame loads, with no old player or sco
   await act(async () =>
     pending.resolve({ ...view, cutoff_sequence: 0, snapshot_id: 'zero', recent_events: [] }),
   );
+});
+it('can generate a recap of the committed minute while cancelling a pending automatic step', async () => {
+  await ready();
+  await seek(400);
+  const pending = deferred<api.MatchView>();
+  vi.mocked(api.fetchView).mockReturnValueOnce(pending.promise);
+  vi.useFakeTimers();
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Reproducir' }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    const signal = vi.mocked(api.fetchView).mock.calls.at(-1)![2];
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Ponerme al día' }));
+    });
+    expect(signal.aborted).toBe(true);
+    expect(api.requestContext).toHaveBeenCalledWith(
+      expect.objectContaining({ to_sequence: 1 }),
+      expect.any(AbortSignal),
+    );
+    expect(screen.getByTestId('playback-clock')).toHaveTextContent('06:40');
+    expect(screen.getByText(context.summary)).toBeVisible();
+    await act(async () =>
+      pending.resolve({ ...view, snapshot_id: 'late-automatic', cutoff_sequence: 2 }),
+    );
+    expect(screen.getByTestId('match-view')).toHaveAttribute('data-cutoff', '1');
+    expect(screen.getByText(context.summary)).toBeVisible();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 it('moves focus to the stable time control when a recent-action shortcut reloads the frame', async () => {
   await ready();

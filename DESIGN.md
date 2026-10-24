@@ -15,11 +15,11 @@ The user approved the Estudio de partido mockup and interaction proposal on 24 O
 
 ## Data and interaction
 
-One event/trajectory is shown, never inferred continuous tracking. The anchored event label uses known coordinates; a leader line is an annotation, not an inferred movement. Recent shortcuts use availability time and focus the stable native time control before reloading.
+One event/trajectory is shown, never inferred continuous tracking. At the user's request, the pitch has no floating text labels; the readable event/player caption remains below it. Recent shortcuts use availability time and focus the stable native time control before reloading.
 
 The result-bound shot comparison renders only when exactly one valid fact per team matches the immutable context snapshot, cutoff and full requested sequence interval, without an additional time filter. Null, unsafe, negative, fractional, duplicate or mismatched counts produce no chart. Zero is an empty meter. Context text remains authoritative and provenance labels distinguish factual, insufficient, scripted and reviewed outputs.
 
-Finite cue durations: event 450 ms, recap 220 ms, drawer 240 ms, press 150 ms. Exact score/count changes are immediate. Seeks clear stale content and evidence immediately; no outgoing snapshot is kept for animation. Reduced motion disables transitions/animations.
+Finite cue durations: event 450 ms, recap 220 ms, drawer 240 ms, press 150 ms. Automatic playback prepares one pending second while keeping the committed clock, score, pitch and sequence visible, then commits the next frame atomically. Pause, evidence and generation cancel a pending step; late responses cannot move the clock. Manual seeks clear stale content and evidence immediately. Exact numbers are never count-up animations. Reduced motion disables transitions/animations.
 
 Evidence uses a right-side modal drawer on desktop and full-width dialog on mobile, with focus trapping, scroll region, Escape and return focus. It retains the context's immutable snapshot and API batching.
 

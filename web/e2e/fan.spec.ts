@@ -38,7 +38,6 @@ test('studio evidence drawer is finite, reduced-motion safe and cannot retain co
   await expect(drawer).toHaveCount(0);
   await seek(page, 0);
   await expect(page.locator('.shot-comparison')).toHaveCount(0);
-  await expect(page.locator('.pitch-callout')).toHaveCount(0);
   await expect(drawer).toHaveCount(0);
 });
 test('event motion is finite, respects reduced motion and removes the previous event immediately on rewind', async ({
@@ -117,17 +116,55 @@ test('playback completes slow bounded reads without cancelling them on every tic
   });
   await page.getByRole('button', { name: 'Reproducir', exact: true }).click();
   await expect
-    .poll(async () => {
-      const [minutes, seconds] = (await page.getByTestId('playback-clock').innerText())
-        .split(':')
-        .map(Number);
-      return minutes * 60 + seconds;
-    })
+    .poll(
+      async () => {
+        const [minutes, seconds] = (await page.getByTestId('playback-clock').innerText())
+          .split(':')
+          .map(Number);
+        return minutes * 60 + seconds;
+      },
+      { timeout: 8000, intervals: [100, 250, 500] },
+    )
     .toBeGreaterThanOrEqual(2);
   await expect(page.getByTestId('match-view')).toBeVisible({ timeout: 5000 });
   await expect(page.getByRole('button', { name: 'Pausar', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pausar', exact: true }).click();
   await page.unroute('**/view?*');
+});
+test('automatic playback keeps the committed score, pitch and recent sequence visible between slow reads', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.getByTestId('match-view')).toBeVisible();
+  await seek(page, 1400);
+  await page.route('**/view?*', async (route) => {
+    const response = await route.fetch();
+    const body = await response.body();
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    if (!page.isClosed())
+      await route
+        .fulfill({ body, status: response.status(), headers: response.headers() })
+        .catch(() => {});
+  });
+  const score = await page.getByTestId('score').elementHandle();
+  const pitch = await page.locator('.pitch').elementHandle();
+  const rail = await page.locator('.moment-rail').elementHandle();
+  await page.getByRole('button', { name: 'Reproducir', exact: true }).click();
+  const read = await page.waitForRequest((r) => r.url().includes('/view?'));
+  expect(read).toBeDefined();
+  await expect(page.getByTestId('playback-clock')).toHaveText('23:20');
+  await expect(page.getByTestId('score')).toBeVisible();
+  expect(await score!.evaluate((node) => node.isConnected && node.dataset.testid === 'score')).toBe(
+    true,
+  );
+  expect(await pitch!.evaluate((node) => node.isConnected)).toBe(true);
+  expect(await rail!.evaluate((node) => node.isConnected)).toBe(true);
+  await expect(page.getByRole('img', { name: /Cargando el minuto/ })).toHaveCount(0);
+  await expect(page.getByTestId('playback-clock')).toHaveText('23:21', { timeout: 5000 });
+  await page.getByRole('button', { name: 'Pausar', exact: true }).click();
+  expect(await score!.evaluate((node) => node.isConnected)).toBe(true);
+  expect(await pitch!.evaluate((node) => node.isConnected)).toBe(true);
+  expect(await rail!.evaluate((node) => node.isConnected)).toBe(true);
 });
 async function seek(page: Page, second: number) {
   const input = page.getByRole('slider', { name: /Minuto del partido|Match minute/ });

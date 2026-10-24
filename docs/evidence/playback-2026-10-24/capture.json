@@ -1,0 +1,23 @@
+{
+  "record": [
+    {
+      "width": 1440,
+      "mode": "factual",
+      "status": "factual",
+      "modelCalls": 0,
+      "cutoff": 269,
+      "snapshot": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "score": "1 – 0"
+    },
+    {
+      "width": 390,
+      "mode": "factual",
+      "status": "factual",
+      "modelCalls": 0,
+      "cutoff": 269,
+      "snapshot": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "score": "1 – 0"
+    }
+  ],
+  "errors": []
+}

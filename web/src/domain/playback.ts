@@ -6,6 +6,7 @@ export type Preferences = {
 };
 export type PlaybackState = {
   second: number;
+  pendingSecond: number | null;
   fromSecond: number;
   speed: number;
   playing: boolean;
@@ -21,13 +22,14 @@ export type Action =
   | { type: 'playing'; playing: boolean }
   | { type: 'speed'; speed: number }
   | { type: 'from'; second: number }
-  | { type: 'view'; view: PlaybackState['view']; key: number }
+  | { type: 'view'; view: PlaybackState['view']; key: number; second: number }
   | { type: 'context'; result: NonNullable<PlaybackState['context']>; key: number }
   | { type: 'advance'; headSecond: number }
   | { type: 'evidence'; open: boolean };
 export function initialPlayback(): PlaybackState {
   return {
     second: 0,
+    pendingSecond: null,
     fromSecond: 0,
     speed: 1,
     playing: false,
@@ -41,18 +43,20 @@ export function initialPlayback(): PlaybackState {
 export function reducePlayback(state: PlaybackState, action: Action): PlaybackState {
   switch (action.type) {
     case 'advance': {
-      // Automatic playback buffers behind its pending frame. A manual seek still
-      // invalidates immediately, so rewinds cannot retain later data.
-      if (!state.playing || !state.view) return state;
+      // Keep the committed frame/clock intact while one automatic read is pending.
+      // Manual navigation still clears immediately, including backwards seeks.
+      if (!state.playing || !state.view || state.pendingSecond != null || state.evidenceOpen)
+        return state;
       const second = Math.min(action.headSecond, state.second + state.speed);
       return second === state.second
         ? { ...state, playing: false }
-        : reducePlayback(state, { type: 'seek', second });
+        : { ...state, pendingSecond: second };
     }
     case 'seek':
       return {
         ...state,
         second: action.second,
+        pendingSecond: null,
         fromSecond: Math.min(state.fromSecond, action.second),
         view: null,
         context: null,
@@ -63,6 +67,7 @@ export function reducePlayback(state: PlaybackState, action: Action): PlaybackSt
       return {
         ...state,
         preferences: action.preferences,
+        pendingSecond: null,
         context: null,
         evidenceOpen: false,
         requestKey: state.requestKey + 1,
@@ -71,20 +76,45 @@ export function reducePlayback(state: PlaybackState, action: Action): PlaybackSt
       return {
         ...state,
         fromSecond: Math.min(action.second, state.second),
+        pendingSecond: null,
         context: null,
         evidenceOpen: false,
         requestKey: state.requestKey + 1,
       };
     case 'playing':
-      return { ...state, playing: action.playing };
+      return {
+        ...state,
+        playing: action.playing,
+        pendingSecond: action.playing ? state.pendingSecond : null,
+      };
     case 'speed':
       return { ...state, speed: action.speed };
-    case 'view':
-      return action.key === state.requestKey ? { ...state, view: action.view } : state;
+    case 'view': {
+      if (
+        action.key !== state.requestKey ||
+        action.second !== (state.pendingSecond ?? state.second)
+      )
+        return state;
+      if (state.pendingSecond != null && action.view)
+        return {
+          ...state,
+          second: state.pendingSecond,
+          pendingSecond: null,
+          view: action.view,
+          context: null,
+          evidenceOpen: false,
+          requestKey: state.requestKey + 1,
+        };
+      return { ...state, view: action.view };
+    }
     case 'context':
       return applyContext(state, action.result, action.key);
     case 'evidence':
-      return { ...state, evidenceOpen: action.open };
+      return {
+        ...state,
+        evidenceOpen: action.open,
+        pendingSecond: action.open ? null : state.pendingSecond,
+      };
   }
 }
 export function applyContext(

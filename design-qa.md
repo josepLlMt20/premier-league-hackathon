@@ -1,5 +1,11 @@
 # Match studio design QA
 
+## Latest user-directed correction
+
+The user rejected floating field labels and reported page-like flicker every second. The labels are now removed on all widths; the full event caption remains below the pitch. Automatic playback retains the committed frame until its next bounded read completes, then updates clock and data together. Explicit seeks still clear immediately. Fresh actual captures are in `docs/evidence/playback-2026-10-24/`, including `06-campo.png`. The field capture was opened and inspected: no text overlays or layout changes remain on the pitch. The previous label design and corrections below are historical.
+
+Latest checks:44 unit and14 real HTTP/browser tests pass, with stable score/pitch/sequence DOM during1200ms reads, cancellation-safe recap generation, normal/reduced motion, desktop/mobile accessibility and320px reflow. Build/types/format pass; factual captures have zero model calls and no console/page errors. The selected visual direction and all other modules remain unchanged. **final result: passed** for this correction.
+
 **Source visual truth:** `docs/design-explorations/2026-10-24/05-estudio-de-partido.png` (1435×1096 pixels).
 **Implementation:** `docs/evidence/studio-2026-10-24/01-escritorio.png` (1440×1335 full page); CSS viewport1440×1100, device density1. Reference normalized by width1440/1435 for comparison; its vertical composition is a schematic target, not a mandate to distort metric pitch geometry.
 **State:** synthetic match paused at25:00; score1–0; factual context00:00–25:00; shots6–0; cutoff269; zero model calls. Received head is90:00 in the actual completed local ingestion, rather than the older mock's62:16. No future event/score beyond the selected cutoff is displayed.

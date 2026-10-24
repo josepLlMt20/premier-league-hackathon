@@ -3,6 +3,25 @@ import { initialPlayback, reducePlayback, applyContext, type PlaybackState } fro
 import { context, view } from '../test-fixtures';
 
 describe('temporal playback', () => {
+  it('keeps the committed moment visible until the next automatic frame is ready', () => {
+    const state = { ...initialPlayback(), second: 400, view, context, playing: true };
+    const pending = reducePlayback(state, { type: 'advance', headSecond: 1500 });
+    expect(pending.second).toBe(400);
+    expect(pending.view).toBe(view);
+    expect(pending.context).toBe(context);
+    expect(pending.requestKey).toBe(state.requestKey);
+    expect(reducePlayback(pending, { type: 'advance', headSecond: 1500 })).toBe(pending);
+  });
+  it('cancels an automatic frame on pause without blanking or accepting its late response', () => {
+    const state = { ...initialPlayback(), second: 400, view, playing: true };
+    const pending = reducePlayback(state, { type: 'advance', headSecond: 1500 });
+    const paused = reducePlayback(pending, { type: 'playing', playing: false });
+    expect(paused.second).toBe(400);
+    expect(paused.view).toBe(view);
+    expect(
+      reducePlayback(paused, { type: 'view', view, key: pending.requestKey, second: 401 }),
+    ).toBe(paused);
+  });
   it('immediately removes later score, context and evidence when rewinding', () => {
     const state = { ...initialPlayback(), second: 900, view, context, evidenceOpen: true };
     const next = reducePlayback(state, { type: 'seek', second: 300 });
@@ -47,11 +66,13 @@ describe('temporal playback', () => {
   it('an advancing shared head cannot restart or slow the viewer timer', () => {
     let state: PlaybackState = { ...initialPlayback(), view, playing: true, speed: 5 };
     state = reducePlayback(state, { type: 'advance', headSecond: 100 });
-    state = { ...state, view };
+    state = reducePlayback(state, { type: 'view', view, key: state.requestKey, second: 5 });
     state = reducePlayback(state, { type: 'advance', headSecond: 200 });
+    state = reducePlayback(state, { type: 'view', view, key: state.requestKey, second: 10 });
     expect(state.second).toBe(10);
     expect(state.requestKey).toBe(2);
     state = reducePlayback({ ...state, view }, { type: 'advance', headSecond: 12 });
+    state = reducePlayback(state, { type: 'view', view, key: state.requestKey, second: 12 });
     expect(state.second).toBe(12);
     state = reducePlayback({ ...state, view }, { type: 'advance', headSecond: 12 });
     expect(state.playing).toBe(false);

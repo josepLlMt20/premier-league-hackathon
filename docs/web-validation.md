@@ -1,5 +1,13 @@
 # Fan viewer: task 6
 
+## Latest playback correction (24 October)
+
+The user reported that each automatic second looked like a page reload and rejected floating pitch labels. The timer reused manual seek, clearing the score, event and timeline during every bounded read. Automatic playback now keeps a committed frame and a single pending target, and commits the clock and data together. Pause, evidence or generation cancels that pending step; explicit manual seeks still remove the old data immediately. Preference-only changes no longer refetch the same bounded view. Floating labels and their styles were removed; the full event/player caption stays below the field.
+
+Regressions first reproduced the optimistic clock and disappearing score/sequence. **44 unit tests pass**, including stable DOM during slow reads, late responses after pause and generating from the committed frame while cancelling an automatic read. **14 real HTTP/SQLite browser tests pass** on desktop/mobile, including stable mounted score/pitch/sequence with1200ms delayed responses. The older slow-read poll now waits for committed data, with an8-second bound and shorter polling intervals instead of measuring an optimistic target clock. Build, API drift and formatting checks pass.
+
+Latest real factual captures: [desktop](evidence/playback-2026-10-24/01-escritorio.png), [mobile](evidence/playback-2026-10-24/04-movil.png), [field without labels](evidence/playback-2026-10-24/06-campo.png). Both widths use cutoff269 at25:00, score1–0 and zero model calls; no console/page errors were recorded. Earlier studio captures below remain historical.
+
 ## Current studio refinement (24 October)
 
 The user-approved Estudio de partido design supersedes the earlier Heyclicky appearance described in historical notes below. The visible provisional English identity is **Touchline**, with a local generated abstract sequence mark and self-hosted IBM Plex Sans. Backend names, identifiers and storage keys remain stable.

@@ -323,20 +323,6 @@ h3 {
   stroke: var(--pitch-event);
   stroke-width: 0.6;
 }
-.callout-surface {
-  fill: var(--stage);
-  stroke: var(--stage-muted);
-  stroke-width: 0.12;
-}
-.callout-leader {
-  stroke: var(--stage-muted);
-  stroke-width: 0.15;
-}
-.callout-text {
-  fill: var(--stage-foreground);
-  font-size: 2.05px;
-  font-weight: 500;
-}
 .pitch-empty {
   position: absolute;
   left: 50%;
@@ -1188,9 +1174,6 @@ details > summary {
   .pitch-heading {
     margin-bottom: var(--space-3);
     font-size: 0.8125rem;
-  }
-  .pitch-callout {
-    display: none;
   }
   .playback-controls {
     padding: var(--space-3);
