@@ -12,7 +12,7 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 - Persistent SQLite event history and resumable ingestion are implemented. An Azure Tables adapter shares the same contract and is tested offline through the real SDK.
 - The analyst/writer/reviewer workflow, scoped tools, claim validation and explicit factual fallback are implemented and tested offline, including the real Foundry SDK with a simulated transport. The live bilingual Foundry smoke has also passed; measured results and limitations are in [agent validation](docs/agents-validation.md).
 - The temporal HTTP API, bounded views/evidence, isolated context cache and two-generation admission limit are implemented. A local single-process server runs an independent resumable ingestion scheduler.
-- The first fan web experience is implemented: bounded playback, Spanish/English catch-up, favorite team/detail preferences and inspectable evidence. It uses the selected Heyclicky design system. [Web usage and validation](docs/web-validation.md).
+- The first fan web experience is implemented: bounded playback, Spanish/English catch-up, favorite team/detail preferences and inspectable evidence. The approved Touchline studio includes stable automatic playback, a result-bound shot comparison and a responsive evidence drawer. Touchline is the provisional English identity. [Web usage and validation](docs/web-validation.md).
 - Professional briefings/overlays, Azure application deployment, live Azure storage verification and user studies remain pending.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.

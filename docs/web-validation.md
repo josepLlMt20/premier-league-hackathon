@@ -1,5 +1,11 @@
 # Fan viewer: task 6
 
+## Final PR review and merge preparation (24 October)
+
+The whole PR was reviewed from `bf9bbbc` to `0f26e98`. One Important issue was reproduced: regenerating the same interval could retain a previous evidence bundle while rendering a replacement context's facts. Starting an explicit generation now retires the old context/evidence and cancels a pending playback step without changing the committed frame or request key. This unmounts the previous evidence receipt, preventing it from being reopened while loading; replacement evidence loads afresh.
+
+The regression failed against the old behavior before the fix. Fresh verification: **45 frontend unit tests pass**, **14 full browser journeys pass plus2 focused regeneration journeys** (desktop/mobile,16 distinct browser checks), build/types/format pass. The focused browser test controls the context transport over the real bounded API and verifies factual fallback → regenerate → replacement evidence with different event IDs at the same cutoff, without live model calls. The complete Python suite also passes: **255 passed, one opted-in Foundry live test skipped**,168.95seconds. The reviewer found no other Critical/Important issues; the material finding is fixed and verified in one pass.
+
 ## Latest playback correction (24 October)
 
 The user reported that each automatic second looked like a page reload and rejected floating pitch labels. The timer reused manual seek, clearing the score, event and timeline during every bounded read. Automatic playback now keeps a committed frame and a single pending target, and commits the clock and data together. Pause, evidence or generation cancels that pending step; explicit manual seeks still remove the old data immediately. Preference-only changes no longer refetch the same bounded view. Floating labels and their styles were removed; the full event/player caption stays below the field.

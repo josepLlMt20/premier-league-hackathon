@@ -22,6 +22,7 @@ export type Action =
   | { type: 'playing'; playing: boolean }
   | { type: 'speed'; speed: number }
   | { type: 'from'; second: number }
+  | { type: 'context-start' }
   | { type: 'view'; view: PlaybackState['view']; key: number; second: number }
   | { type: 'context'; result: NonNullable<PlaybackState['context']>; key: number }
   | { type: 'advance'; headSecond: number }
@@ -109,6 +110,8 @@ export function reducePlayback(state: PlaybackState, action: Action): PlaybackSt
     }
     case 'context':
       return applyContext(state, action.result, action.key);
+    case 'context-start':
+      return { ...state, playing: false, pendingSecond: null, context: null, evidenceOpen: false };
     case 'evidence':
       return {
         ...state,

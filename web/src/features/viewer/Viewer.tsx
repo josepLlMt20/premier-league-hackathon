@@ -146,7 +146,9 @@ export function Viewer({
     generation.current = controller;
     const key = state.requestKey,
       view = state.view;
-    dispatch({ type: 'playing', playing: false });
+    // An explicit rerun retires the previous receipt and unmounts its evidence,
+    // even when the minute, snapshot and request key have not changed.
+    dispatch({ type: 'context-start' });
     setContextLoading(true);
     setContextError(null);
     try {

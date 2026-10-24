@@ -40,6 +40,6 @@
 - [x] Extend/run browser checks for drawer enter/reduced-motion behavior and immediate stale-data removal. Preserve existing real HTTP/SQLite checks.
 - [x] Fix observed issues, capture real factual desktop/mobile/evidence/preferences states, and save `design-qa.md` with comparison findings.
 - [x] Obtain one independent review of this delivery; address material findings in one regression-tested fix pass.
-- [ ] Commit/push the verified update to PR #5; return accessible image links. Do not merge.
+- [x] Commit/push the verified update to PR #5; return accessible image links. This delivery initially remained open for user review; the user subsequently requested final review and integration on24October.
 
 **Expected checks:** unit tests pass, build/types/format pass, real HTTP browser suite passes, no actionable P0/P1/P2 visual findings. Existing unchanged Python suite remains prior evidence; no new cloud/model quality claims.

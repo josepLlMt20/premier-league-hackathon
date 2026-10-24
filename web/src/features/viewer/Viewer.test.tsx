@@ -227,6 +227,63 @@ it('opens evidence on demand and closes it without moving playback', async () =>
   expect(screen.getByTestId('playback-clock')).toHaveTextContent('06:40');
   expect(screen.getByRole('button', { name: 'Ver evidencia' })).toHaveFocus();
 });
+it('retires the previous recap and its evidence while regenerating the same interval', async () => {
+  await ready();
+  await seek(400);
+  vi.mocked(api.requestContext).mockResolvedValueOnce({
+    ...context,
+    status: 'factual',
+    mode: 'factual',
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Ponerme al día' }));
+  await screen.findByText(context.summary);
+  fireEvent.click(screen.getByRole('button', { name: 'Ver evidencia' }));
+  await within(await screen.findByRole('dialog')).findByText('Alex Reed');
+  fireEvent.click(screen.getByRole('button', { name: 'Volver al resumen' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+  const next = deferred<api.ContextResult>();
+  vi.mocked(api.requestContext).mockReturnValueOnce(next.promise);
+  fireEvent.click(screen.getByRole('button', { name: 'Ponerme al día' }));
+  expect(screen.queryByText(context.summary)).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Ver evidencia' })).not.toBeInTheDocument();
+  expect(screen.getByTestId('playback-clock')).toHaveTextContent('06:40');
+  const support = {
+    ...event,
+    event_id: 'earlier-support',
+    sequence: 0,
+    occurred_second: 100,
+    available_second: 100,
+    team_id: 'away',
+    player_id: 'a1',
+  };
+  vi.mocked(api.fetchEvidence).mockResolvedValueOnce({
+    snapshot_id: view.snapshot_id,
+    cutoff_sequence: 1,
+    events: [support],
+    annulled_event_ids: [],
+  });
+  await act(async () =>
+    next.resolve({
+      ...context,
+      summary: 'Una nueva explicación.',
+      status: 'verified',
+      mode: 'foundry',
+      evidence_ids: [support.event_id],
+    }),
+  );
+  await screen.findByText('Una nueva explicación.');
+  fireEvent.click(screen.getByRole('button', { name: 'Ver evidencia' }));
+  const newDialog = await screen.findByRole('dialog');
+  await within(newDialog).findByText('Sam Lane');
+  expect(within(newDialog).queryByText('Alex Reed')).not.toBeInTheDocument();
+  expect(api.fetchEvidence).toHaveBeenLastCalledWith(
+    metadata.match_id,
+    1,
+    [support.event_id],
+    expect.any(AbortSignal),
+  );
+});
 it('offers retry on a failed view instead of showing an empty match', async () => {
   vi.mocked(api.fetchView).mockRejectedValueOnce(new Error('offline'));
   await ready();

@@ -3,6 +3,75 @@ import AxeBuilder from '@axe-core/playwright';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import type { ContextResult, MatchView } from '../src/api/client';
 const output = '../tmp/ui-validation';
+test('same-interval regeneration retires old evidence before a replacement result is shown', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.getByTestId('match-view')).toBeVisible();
+  const boundedResponse = page.waitForResponse((r) => r.url().includes('/view?'));
+  await seek(page, 1500);
+  const bounded: MatchView = await (await boundedResponse).json();
+  const oldEvent = bounded.recent_events.at(-1)!;
+  const newEvent = bounded.recent_events.at(-2)!;
+  let calls = 0;
+  let release!: () => void;
+  const replacement = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/context', async (route) => {
+    const response = await route.fetch();
+    const result: ContextResult = await response.json();
+    const first = calls++ === 0;
+    if (!first) await replacement;
+    const support = first ? oldEvent : newEvent;
+    const summary = first ? 'Resumen anterior.' : 'Resumen regenerado.';
+    // Explicitly controlled transport over the real bounded API; no live provider.
+    await route.fulfill({
+      response,
+      json: {
+        ...result,
+        mode: first ? 'factual' : 'scripted',
+        status: first ? 'factual' : 'verified',
+        summary,
+        cards: [],
+        facts: [],
+        evidence_ids: [support.event_id],
+        summary_claims: [
+          {
+            claim_id: 'support',
+            kind: 'observed',
+            text: summary,
+            event_ids: [support.event_id],
+            fact_ids: [],
+            limitations: [],
+          },
+        ],
+      },
+    });
+  });
+  await page.getByRole('button', { name: 'Ponerme al día' }).click();
+  await expect(page.locator('.recap-summary')).toHaveText('Resumen anterior.');
+  await page.getByRole('button', { name: 'Ver evidencia', exact: true }).click();
+  await expect(
+    page.getByRole('dialog').getByText(oldEvent.event_id, { exact: false }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Ponerme al día' }).click();
+  await expect(page.locator('.recap-summary')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Ver evidencia', exact: true })).toHaveCount(0);
+  await expect(page.getByTestId('playback-clock')).toHaveText('25:00');
+  release();
+  await expect(page.locator('.recap-summary')).toHaveText('Resumen regenerado.');
+  await page.getByRole('button', { name: 'Ver evidencia', exact: true }).click();
+  await expect(
+    page.getByRole('dialog').getByText(newEvent.event_id, { exact: false }),
+  ).toBeVisible();
+  await expect(page.getByRole('dialog').getByText(oldEvent.event_id, { exact: false })).toHaveCount(
+    0,
+  );
+  expect(calls).toBe(2);
+});
 test('studio evidence drawer is finite, reduced-motion safe and cannot retain context during a rewind', async ({
   page,
 }) => {
