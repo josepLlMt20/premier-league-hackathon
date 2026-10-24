@@ -49,3 +49,6 @@ npm.cmd run dev -- --port 5176 --strictPort
 ```
 
 The in-app browser was inspected without altering the user's ongoing test. Its real generated Spanish result at 26:07 showed the **Narrativa IA · revisada** label, a distinct explanation/locution and enabled exports. [Actual preview capture](evidence/foundry-deadline-2026-10-24/real-preview-es.jpg). Screenshot content and timing samples are separate observed requests; no scripted text is represented as Foundry output.
+## Independent deadline review
+
+A fresh reviewer examined `158c2e6..16bd44f`, finding no material defects. Independently 62 backend checks and 4 browser-client unit tests passed. The reviewer confirmed shared 25-second generation caps, shorter-budget cancellation/slot cleanup, 10-second storage reads and the targeted spatial/unit guards; they did not change active previews or make live requests. The full 279-backend/66-web-unit/22-browser results were run by the implementer. No material fix pass was needed. Editorial quality, comprehensive natural-language grounding, production readiness and latency guarantees remain outside this verification; the longer deadline permits real testing rather than proving those outcomes.
