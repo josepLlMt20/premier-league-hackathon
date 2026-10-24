@@ -10,7 +10,7 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 - Local Microsoft Foundry connection verified with Microsoft Agent Framework, Azure sign-in, a local function tool and a Pydantic structured response.
 - Four seeded 90-minute scenarios, immutable events, bounded snapshots, metrics, pattern detection and inspectable evidence are implemented with automated tests.
 - Persistent SQLite event history and resumable ingestion are implemented. An Azure Tables adapter shares the same contract and is tested offline through the real SDK.
-- The analyst/writer/reviewer workflow, scoped tools, claim validation and explicit factual fallback are implemented and tested offline, including the real Foundry SDK with a simulated transport. The new live agent smoke currently needs Azure reauthentication.
+- The analyst/writer/reviewer workflow, scoped tools, claim validation and explicit factual fallback are implemented and tested offline, including the real Foundry SDK with a simulated transport. The live bilingual Foundry smoke has also passed; measured results and limitations are in [agent validation](docs/agents-validation.md).
 - The web application and Azure application deployment are **not implemented yet**. Live Azure storage verification is still pending.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.

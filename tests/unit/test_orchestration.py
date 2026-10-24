@@ -173,3 +173,50 @@ def test_factual_fallback_is_bilingual_with_identical_facts(case):
     assert es.facts == en.facts
     assert "Resumen factual" in es.summary
     assert "Factual summary" in en.summary
+
+
+@pytest.mark.parametrize("malformed", ["{bad json", {"decisions": "invalid"}])
+def test_malformed_first_review_gets_the_single_batch_repair(case, malformed):
+    class InvalidReview(ScriptedRunner):
+        reviewed = 0
+
+        async def run(self, role, payload, tools):
+            output = await super().run(role, payload, tools)
+            if role == "reviewer":
+                self.reviewed += 1
+                if self.reviewed == 1:
+                    return malformed
+            return output
+
+    runner = InvalidReview()
+    result = asyncio.run(orchestrate(*case, runner))
+    assert result.status == "verified"
+    assert "invalid_review" in result.rejection_codes
+    assert [role for role, _ in runner.calls] == ["analyst", "writer", "reviewer", "writer", "reviewer"]
+    assert runner.calls[3][1]["repair"] is True
+    assert "invalid_review" in runner.calls[3][1]["rejection_codes"]
+
+
+def test_malformed_repair_review_keeps_previously_accepted_stories(case):
+    class PartialReview(ScriptedRunner):
+        rejected_id = None
+
+        async def run(self, role, payload, tools):
+            output = await super().run(role, payload, tools)
+            if role == "reviewer":
+                if self.rejected_id is not None:
+                    return "{bad json"
+                self.rejected_id = payload["cards"][0]["story_id"]
+                return AgentOutput(decisions=tuple(ReviewDecision(
+                    story_id=card["story_id"], accepted=card["story_id"] != self.rejected_id,
+                    codes=("unsupported_meaning",) if card["story_id"] == self.rejected_id else ())
+                    for card in payload["cards"]))
+            return output
+
+    runner = PartialReview()
+    result = asyncio.run(orchestrate(*case, runner))
+    assert result.status == "verified"
+    assert result.cards and all(card.story_id != runner.rejected_id for card in result.cards)
+    assert "invalid_review" in result.rejection_codes
+    assert sum(role == "writer" for role, _ in runner.calls) == 2
+    assert sum(role == "reviewer" for role, _ in runner.calls) == 2

@@ -18,8 +18,9 @@ def draft_for(story):
         "territorial_shift": "territorial_share",
     }[candidate["pattern"]]]
     before, now = facts[:2]
+    label = "recuperaciones altas: " if candidate["pattern"] == "high_recoveries" else ""
     text = ("{{entity:" + candidate["team_id"] + "}}: "
-            "{{fact:" + now["fact_id"] + "}}, antes {{fact:" + before["fact_id"] + "}}.")
+            + label + "{{fact:" + now["fact_id"] + "}}, antes {{fact:" + before["fact_id"] + "}}.")
     claims = [Claim(claim_id=f"claim-{candidate['story_id']}-{index}", kind="observed", text=text,
                     fact_ids=(now["fact_id"], before["fact_id"]), event_ids=()) for index in range(4)]
     return CardDraft(story_id=candidate["story_id"], headline=claims[0], explanation=claims[1],

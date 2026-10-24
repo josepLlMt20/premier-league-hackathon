@@ -58,6 +58,8 @@ This prose rule does not apply to integer fact reference indexes in JSON support
 Match facts and entity markers to the correct metric, team and interval. An observed pattern is not a proven cause.
 Compare only the supplied recent and earlier windows. Do not infer a match phase, final quarter, final score,
 half or clock time from metric values. Never describe a recent window as the end of the match.
+When citing high_recoveries, explicitly say "high recoveries" in English or "recuperaciones altas" in Spanish.
+Do not shorten this metric to "recoveries", "recovery count" or "high-value recoveries" in any card field.
 """
 
 INSTRUCTIONS = {

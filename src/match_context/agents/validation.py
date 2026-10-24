@@ -6,6 +6,8 @@ from .base import ValidationReport
 
 MARKER = re.compile(r"\{\{(fact|entity):([A-Za-z0-9_-]+)\}\}")
 CAUSAL = re.compile(r"\b(caused|causes|proves|therefore|because|causó|causa|causaron|demuestra|provocó|porque)\b|due to|gracias a", re.I)
+HIGH_RECOVERY_LABEL = re.compile(r"\b(?:high[-\s]+recover(?:y|ies)|recuperaci(?:ón|ones)[-\s]+altas?)\b", re.I)
+RECOVERY_WORD = re.compile(r"\b(?:recover\w*|recuper\w*)\b", re.I)
 
 
 def check_claim(claim: Claim, tools) -> tuple[str, ...]:
@@ -31,6 +33,12 @@ def check_claim(claim: Claim, tools) -> tuple[str, ...]:
             if kind == "entity" and identifier not in tools.entities:
                 codes.add("unknown_entity")
         free = MARKER.sub("", text)
+        high_support = any(tools.fact_map[identifier].name == "high_recoveries"
+                           for identifier in claim.fact_ids if identifier in tools.fact_map)
+        high_number = any(kind == "fact" and identifier in tools.fact_map
+                          and tools.fact_map[identifier].name == "high_recoveries" for kind, identifier in markers)
+        if high_support and (high_number or RECOVERY_WORD.search(free)) and not HIGH_RECOVERY_LABEL.search(free):
+            codes.add("missing_metric_qualifier")
         if "{{" in free or "}}" in free:
             codes.add("invalid_marker")
         if any(character.isnumeric() for character in free):

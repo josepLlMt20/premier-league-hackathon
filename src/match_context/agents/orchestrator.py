@@ -95,20 +95,24 @@ async def orchestrate(snapshot, request, runner, *, limits: AgentLimits | None =
                 else:
                     valid.append(card)
             if valid:
-                review = await invoke("reviewer", {**payload, "cards": [card.model_dump(mode="json") for card in valid]})
-                decisions = {decision.story_id: decision for decision in review.decisions}
-                if (review.cards or review.selected_story_ids or len(decisions) != len(review.decisions)
-                        or set(decisions) != {card.story_id for card in valid}):
+                try:
+                    review = await invoke("reviewer", {**payload, "cards": [card.model_dump(mode="json") for card in valid]})
+                except (ValueError, ValidationError):
                     rejected_codes.add("invalid_review")
                 else:
-                    for card in valid:
-                        decision = decisions[card.story_id]
-                        if decision.accepted and not decision.codes:
-                            accepted[card.story_id] = card
-                            budget.steps.append(TraceStep(role="reviewer", decision="accepted"))
-                        else:
-                            rejected_codes.update(decision.codes or ("review_rejected",))
-                            budget.steps.append(TraceStep(role="reviewer", decision="rejected"))
+                    decisions = {decision.story_id: decision for decision in review.decisions}
+                    if (review.cards or review.selected_story_ids or len(decisions) != len(review.decisions)
+                            or set(decisions) != {card.story_id for card in valid}):
+                        rejected_codes.add("invalid_review")
+                    else:
+                        for card in valid:
+                            decision = decisions[card.story_id]
+                            if decision.accepted and not decision.codes:
+                                accepted[card.story_id] = card
+                                budget.steps.append(TraceStep(role="reviewer", decision="accepted"))
+                            else:
+                                rejected_codes.update(decision.codes or ("review_rejected",))
+                                budget.steps.append(TraceStep(role="reviewer", decision="rejected"))
             pending = [identifier for identifier in pending if identifier not in accepted]
             if not pending:
                 break

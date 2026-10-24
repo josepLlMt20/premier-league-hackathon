@@ -88,8 +88,11 @@ def test_real_sdk_counts_every_model_turn_and_keeps_requests_isolated(scenario_m
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("bad_text", [None, "{bad json", '{"selected_story_ids":[],"cards":"invalid","decisions":[]}'])
-def test_sdk_three_role_output_and_parse_repair_keep_all_reported_usage(scenario_main, bad_text):
+@pytest.mark.parametrize("bad_role,bad_text", [
+    (None, None), ("writer", "{bad json"), ("writer", '{"cards":"invalid"}'),
+    ("reviewer", "{bad json"), ("reviewer", '{"decisions":"invalid"}'),
+])
+def test_sdk_three_role_output_and_parse_repair_keep_all_reported_usage(scenario_main, bad_role, bad_text):
     from match_context.agents.orchestrator import orchestrate
     from .agent_helpers import compact_card, draft_for
     from match_context.agents.wire import WireCodec
@@ -101,9 +104,19 @@ def test_sdk_three_role_output_and_parse_repair_keep_all_reported_usage(scenario
         tools = prepare_tools(snapshot, request)
         candidate = tools.candidates[0]
         draft = draft_for(tools.story_payload(candidate))
-        outputs = [json.dumps({"selected_story_ids": [candidate.story_id]})] + ([bad_text] if bad_text else []) + [
-                   json.dumps({"cards": [compact_card(draft, WireCodec(tools))]}),
-                   json.dumps({"decisions": [{"story_id": candidate.story_id, "accepted": True, "codes": []}]})]
+        writing = json.dumps({"cards": [compact_card(draft, WireCodec(tools))]})
+        outputs = [json.dumps({"selected_story_ids": [candidate.story_id]})]
+        required_outputs = ["selected_story_ids"]
+        if bad_role == "writer":
+            outputs.append(bad_text)
+            required_outputs.append("cards")
+        outputs.append(writing)
+        required_outputs.append("cards")
+        if bad_role == "reviewer":
+            outputs.extend([bad_text, writing])
+            required_outputs.extend(["decisions", "cards"])
+        outputs.append(json.dumps({"decisions": [{"story_id": candidate.story_id, "accepted": True, "codes": []}]}))
+        required_outputs.append("decisions")
 
         async def respond(http_request):
             text = outputs[len(sent)]
@@ -124,7 +137,7 @@ def test_sdk_three_role_output_and_parse_repair_keep_all_reported_usage(scenario
         runner = FoundryRunner(client, http_client=http_client)
         try:
             result = await orchestrate(snapshot, request, runner)
-            expected_turns = 4 if bad_text else 3
+            expected_turns = len(outputs)
             assert len(sent) == expected_turns
             assert result.status == "verified"
             assert result.trace.model_calls == expected_turns
@@ -134,7 +147,6 @@ def test_sdk_three_role_output_and_parse_repair_keep_all_reported_usage(scenario
             assert any(step.decision == "repair_requested" for step in result.trace.steps) == bool(bad_text)
             if bad_text:
                 assert bad_text not in result.model_dump_json()
-            required_outputs = ["selected_story_ids"] + (["cards"] if bad_text else []) + ["cards", "decisions"]
             assert [set(json.loads(req.content)["text"]["format"]["schema"]["properties"])
                     for req in sent] == [{field} for field in required_outputs]
         finally:

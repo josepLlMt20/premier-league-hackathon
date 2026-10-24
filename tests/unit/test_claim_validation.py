@@ -98,3 +98,31 @@ def test_numeric_symbols_are_rejected_in_text_and_limitations(scoped, number, in
                   fact_ids=(scoped.facts[0].fact_id,),
                   limitations=(f"Solo {number} observaciones.",) if in_limitation else ())
     assert "free_number" in check_claim(claim, scoped)
+
+
+@pytest.mark.parametrize("wording", ["recovery count rose from {before} to {now}",
+                                   "Recoveries up {now} (was {before})",
+                                   "Recuperaciones: {before} a {now}"])
+def test_high_recovery_counts_cannot_be_published_as_total_recoveries(scoped, wording):
+    facts = {fact.interval.start_second: fact for fact in scoped.facts
+             if fact.name == "high_recoveries" and fact.team_id == "amber"
+             and fact.interval.start_second in (900, 1200) and fact.interval.end_second in (1200, 1500)}
+    before, now = facts[900], facts[1200]
+    assert (before.value, now.value) == (1, 4)
+    total = {fact.interval.start_second: fact for fact in scoped.facts
+             if fact.name == "recoveries" and fact.team_id == "amber"
+             and fact.interval.start_second in (900, 1200) and fact.interval.end_second in (1200, 1500)}
+    assert (total[900].value, total[1200].value) == (5, 5)
+    claim = Claim(claim_id="ambiguous-recovery", kind="observed",
+                  text=wording.format(before="{{fact:" + before.fact_id + "}}",
+                                      now="{{fact:" + now.fact_id + "}}"),
+                  fact_ids=(before.fact_id, now.fact_id))
+    assert "missing_metric_qualifier" in check_claim(claim, scoped)
+
+
+@pytest.mark.parametrize("label", ["High recoveries", "Recuperaciones altas"])
+def test_high_recovery_claims_keep_their_explicit_metric_qualifier(scoped, label):
+    fact = next(f for f in scoped.facts if f.name == "high_recoveries" and f.team_id == "amber")
+    claim = Claim(claim_id="qualified-recovery", kind="observed",
+                  text=label + ": {{fact:" + fact.fact_id + "}}.", fact_ids=(fact.fact_id,))
+    assert check_claim(claim, scoped) == ()
