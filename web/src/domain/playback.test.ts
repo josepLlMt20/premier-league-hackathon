@@ -3,6 +3,19 @@ import { initialPlayback, reducePlayback, applyContext, type PlaybackState } fro
 import { context, view } from '../test-fixtures';
 
 describe('temporal playback', () => {
+  it('switches audience without moving the committed frame and rejects an old fan response', () => {
+    const state = { ...initialPlayback(), second: 400, view, context, playing: true, pendingSecond: 401, evidenceOpen: true };
+    const next = reducePlayback(state, { type: 'role', role: 'commentator' });
+    expect(next.role).toBe('commentator');
+    expect(next.second).toBe(400);
+    expect(next.view).toBe(view);
+    expect(next.context).toBeNull();
+    expect(next.pendingSecond).toBeNull();
+    expect(next.playing).toBe(false);
+    expect(next.evidenceOpen).toBe(false);
+    expect(applyContext(next, context, state.requestKey).context).toBeNull();
+    expect(applyContext(next, context, next.requestKey).context).toBeNull();
+  });
   it('keeps the committed moment visible until the next automatic frame is ready', () => {
     const state = { ...initialPlayback(), second: 400, view, context, playing: true };
     const pending = reducePlayback(state, { type: 'advance', headSecond: 1500 });

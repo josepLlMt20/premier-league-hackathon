@@ -5,6 +5,7 @@ export type Preferences = {
   favorite_team_id: string | null;
 };
 export type PlaybackState = {
+  role: 'fan' | 'commentator';
   second: number;
   pendingSecond: number | null;
   fromSecond: number;
@@ -17,6 +18,7 @@ export type PlaybackState = {
   evidenceOpen: boolean;
 };
 export type Action =
+  | { type: 'role'; role: PlaybackState['role'] }
   | { type: 'seek'; second: number }
   | { type: 'preferences'; preferences: Preferences }
   | { type: 'playing'; playing: boolean }
@@ -29,6 +31,7 @@ export type Action =
   | { type: 'evidence'; open: boolean };
 export function initialPlayback(): PlaybackState {
   return {
+    role: 'fan',
     second: 0,
     pendingSecond: null,
     fromSecond: 0,
@@ -43,6 +46,9 @@ export function initialPlayback(): PlaybackState {
 }
 export function reducePlayback(state: PlaybackState, action: Action): PlaybackState {
   switch (action.type) {
+    case 'role':
+      return action.role === state.role ? state : { ...state, role: action.role, playing: false,
+        pendingSecond: null, context: null, evidenceOpen: false, requestKey: state.requestKey + 1 };
     case 'advance': {
       // Keep the committed frame/clock intact while one automatic read is pending.
       // Manual navigation still clears immediately, including backwards seeks.
@@ -125,7 +131,7 @@ export function applyContext(
   result: components['schemas']['ContextResult'],
   key: number,
 ): PlaybackState {
-  return key === state.requestKey && result.snapshot_id === state.view?.snapshot_id
+  return key === state.requestKey && result.snapshot_id === state.view?.snapshot_id && result.request.role === state.role
     ? { ...state, context: result }
     : state;
 }
