@@ -74,7 +74,10 @@ it('makes scripted trace provenance and zero real model calls explicit', () => {
 it('does not invent zero calls or claim no workflow when the trace is unavailable', () => {
   const p = props();
   render(
-    <Commentator {...p} state={{ ...p.state, context: { ...professionalResult, trace: undefined } }} />,
+    <Commentator
+      {...p}
+      state={{ ...p.state, context: { ...professionalResult, trace: undefined } }}
+    />,
   );
   fireEvent.click(screen.getByText('Cómo se preparó'));
   expect(screen.getByText('No hay una traza disponible para este resultado.')).toBeVisible();

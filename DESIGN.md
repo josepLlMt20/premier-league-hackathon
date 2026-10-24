@@ -25,4 +25,6 @@ Evidence uses a right-side modal drawer on desktop and full-width dialog on mobi
 
 ## Verification
 
+The professional audience shares the match header, transport, cursor and evidence drawer. Its wider reading column contains up to three editorial cards, observation/interpretation labels, full caveats, cited metrics and a selected lower-third preview. Controls remain rectangular, text remains selectable, and finite220ms result/overlay motion respects reduced motion. Role selection pauses pending playback and retires the old context without changing the selected historical frame. The latest received minute remains an explicit action. See `docs/commentator-validation.md` for scripted verification and captures.
+
 See `design-qa.md`, `docs/web-validation.md` and `docs/evidence/studio-2026-10-24/`. Real captures use factual mode, synthetic data, cutoff269 at25:00 and zero model calls. No new Azure deployment or live-model quality evaluation is implied. Better Design's exhausted quota was not retried; visual QA uses the approved mockup and rendered browsers.

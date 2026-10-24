@@ -35,9 +35,9 @@
 
 **Interfaces:** `Audience = 'fan' | 'commentator'`; role action preserves selected second/view and cancels pending steps while clearing old context/evidence and incrementing requestKey. `ContextFrame = {result: ContextResult; view: MatchView; second: number}`. `exportBriefing(frame): Blob`; `overlayFor(frame, storyId): OverlayPayload`; `canExportBriefing(frame): boolean`. These stronger helper inputs replace the sketch signatures that lacked a way to validate cutoff or include the captured score/time.
 
-- [ ] Write failing tests for role/cached-response isolation, old snapshot exports, unknown/rejected stories, factual status, Unicode limits and context/frame mismatch. Run focused tests; expected failure before implementation.
-- [ ] Implement pure receipt-bound validation/serialization and audience transitions. Preserve known reference intervals; use only rendered card strings, not raw claim templates.
-- [ ] Run focused tests and build; expected green. Commit tested contracts.
+- [x] Write failing tests for role/cached-response isolation, old snapshot exports, unknown/rejected stories, factual status, Unicode limits and context/frame mismatch. Run focused tests; expected failure before implementation.
+- [x] Implement pure receipt-bound validation/serialization and audience transitions. Preserve known reference intervals; use only rendered card strings, not raw claim templates.
+- [x] Run focused tests and build; expected green. Commit tested contracts.
 
 ## Task 2: Professional workspace and shared controls
 
@@ -45,15 +45,15 @@
 
 **Interfaces:** Existing context callbacks and evidence panel reused. Shared controls accept optional audience action labels. Commentator consumes current `PlaybackState`, metadata and the same generation/evidence callbacks. The audience selector lives inside the shared Viewer rather than replacing it in App, preserving one reducer and match identity.
 
-- [ ] Write/run failing UI tests: audience switch preserves cursor and dispatches commentator role; old fan generation ignored; professional cards, intervals, claim kinds, evidence and export state; factual/empty results; clipboard failures.
-- [ ] Implement up to3 briefing cards, selected overlay preview, copy locution with limitations, JSON briefing/overlay download, safe structured trace and shared preferences/interval/generation controls.
-- [ ] Apply existing Touchline tokens and finite motion; preserve the fan UI, playback and accessible evidence behavior. Run unit/build/types/format; expected green.
+- [x] Write/run failing UI tests: audience switch preserves cursor and dispatches commentator role; old fan generation ignored; professional cards, intervals, claim kinds, evidence and export state; factual/empty results; clipboard failures.
+- [x] Implement up to3 briefing cards, selected overlay preview, copy locution with limitations, JSON briefing/overlay download, safe structured trace and shared preferences/interval/generation controls.
+- [x] Apply existing Touchline tokens and finite motion; preserve the fan UI, playback and accessible evidence behavior. Run unit/build/types/format; expected green.
 
 ## Task 3: Browser verification and delivery
 
 **Files:** `web/e2e/commentator.spec.ts`, professional validation docs and real captures; update README/design records.
 
-- [ ] Test actual HTTP/SQLite flow in explicit scripted mode: both roles share selected match/time and evidence, serialized exports retain cutoffs/score, switching role invalidates old output, rejected/factual exports unavailable, trace truthful, desktop/mobile axe/reflow/keyboard.
-- [ ] Inspect actual in-app browser and capture desktop/mobile/professional overlay/evidence. Use clearly labeled scripted preview for accepted cards; retain the factual preview without silently enabling Azure calls.
-- [ ] Run full frontend suite plus existing fan journeys; record results. Backend production unchanged; retain its freshly verified255-test baseline unless new backend changes justify rerun.
+- [x] Test actual HTTP/SQLite flow in explicit scripted mode: both roles share selected match/time and evidence, serialized exports retain cutoffs/score, switching role invalidates old output, rejected/factual exports unavailable, trace truthful, desktop/mobile axe/reflow/keyboard.
+- [x] Inspect actual in-app browser and capture desktop/mobile/professional overlay/evidence. Use clearly labeled scripted preview for accepted cards; retain the factual preview without silently enabling Azure calls.
+- [x] Run full frontend suite plus existing fan journeys; record results. Backend production unchanged; retain its freshly verified255-test baseline unless new backend changes justify rerun.
 - [ ] Obtain one independent whole-branch review; fix material findings in one regression-tested pass. Commit/push and create/attach the PR; show real captures, keep preview available, do not merge.

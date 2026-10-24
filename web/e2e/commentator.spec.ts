@@ -53,7 +53,12 @@ test('professional receipts export bounded briefing and overlay, with evidence a
     .analyze();
   expect(a11y.violations).toEqual([]);
   mkdirSync(output, { recursive: true });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: `${output}/${info.project.name}-overview.png` });
   await page.screenshot({ path: `${output}/${info.project.name}-studio.png`, fullPage: true });
+  await page
+    .locator('.overlay-preview')
+    .screenshot({ path: `${output}/${info.project.name}-overlay.png` });
   const evidence = page.getByRole('button', { name: 'Ver evidencia · 1', exact: true });
   await evidence.click();
   await expect(page.getByRole('dialog')).toBeVisible();
