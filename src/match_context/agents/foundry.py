@@ -175,7 +175,7 @@ class FoundryRunner:
 
 
 @asynccontextmanager
-async def local_foundry_runner():
+async def local_foundry_runner(*, project_endpoint=None, model=None):
     """Use the existing deployment and Azure CLI login; never create resources."""
     from agent_framework.foundry import FoundryChatClient
     from azure.identity.aio import AzureCliCredential, get_bearer_token_provider
@@ -183,7 +183,8 @@ async def local_foundry_runner():
 
     root = Path(__file__).resolve().parents[3]
     load_dotenv(root / ".env", override=False)
-    endpoint, model = os.environ.get("FOUNDRY_PROJECT_ENDPOINT"), os.environ.get("FOUNDRY_MODEL")
+    endpoint = project_endpoint if project_endpoint is not None else os.environ.get("FOUNDRY_PROJECT_ENDPOINT")
+    model = model if model is not None else os.environ.get("FOUNDRY_MODEL")
     if not endpoint or not model:
         raise ValueError("Foundry project endpoint and model deployment are required")
     old_path = os.environ.get("PATH", "")

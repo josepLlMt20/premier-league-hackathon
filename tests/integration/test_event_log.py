@@ -7,6 +7,16 @@ from match_context.storage.base import EventConflict, MatchNotFound
 from match_context.storage.sqlite import SQLiteEventLog
 
 
+def test_catalog_returns_only_registered_static_metadata(log_factory, metadata, make_event):
+    log = log_factory()
+    assert log.list_matches() == ()
+    for number in range(1, 7):
+        log.register_match(metadata.model_copy(update={"match_id": f"match-{number}"}))
+    log.append(make_event())
+    assert tuple(item.match_id for item in log.list_matches()) == tuple(f"match-{number}" for number in range(1, 7))
+    assert log.list_matches()[0] == metadata
+
+
 def test_duplicate_and_conflict_leave_the_original_history(log_factory, metadata, make_event):
     log = log_factory()
     log.register_match(metadata)

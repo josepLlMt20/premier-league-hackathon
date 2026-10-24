@@ -60,6 +60,15 @@ class TablesTransport(HttpTransport):
         if request.method == "GET":
             query = parse_qs(parsed.query)
             expression = query["$filter"][0]
+            if expression == "RowKey eq '!head'":
+                cursor = (query.get("NextPartitionKey", [""])[0], query.get("NextRowKey", [""])[0])
+                rows = [value for key, value in sorted(self.rows.items()) if key[1] == "!head" and key >= cursor]
+                headers = {}
+                if len(rows) > self.page_size:
+                    next_row = rows[self.page_size]
+                    headers = {"x-ms-continuation-NextPartitionKey": next_row["PartitionKey"],
+                               "x-ms-continuation-NextRowKey": next_row["RowKey"]}
+                return Response(request, 200, json.dumps({"value": rows[:self.page_size]}).encode(), headers)
             partition = re.search(r"PartitionKey eq '([^']+)'", expression).group(1)
             lower = re.search(r"RowKey ge '([^']+)'", expression).group(1)
             upper = re.search(r"RowKey le '([^']+)'", expression).group(1)

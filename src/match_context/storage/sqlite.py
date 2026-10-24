@@ -59,6 +59,11 @@ class SQLiteEventLog(EventLog):
         with self._lock:
             return MatchMetadata.model_validate_json(self._header(match_id)[0])
 
+    def list_matches(self) -> tuple[MatchMetadata, ...]:
+        with self._lock:
+            rows = self._connection.execute("SELECT metadata FROM matches ORDER BY match_id").fetchall()
+            return tuple(MatchMetadata.model_validate_json(row[0]) for row in rows)
+
     def position(self, match_id: str) -> IngestPosition:
         with self._lock:
             _, head, clock = self._header(match_id)
