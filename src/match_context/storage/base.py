@@ -60,6 +60,9 @@ class EventLog(ABC):
     def metadata(self, match_id: str) -> MatchMetadata: ...
 
     @abstractmethod
+    def list_matches(self) -> tuple[MatchMetadata, ...]: ...
+
+    @abstractmethod
     def position(self, match_id: str) -> IngestPosition: ...
 
     def head(self, match_id: str) -> int:

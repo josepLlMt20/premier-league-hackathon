@@ -1,0 +1,7 @@
+# Full backend environment; the included agent/storage pins remain unchanged.
+-r requirements-agents-dev.lock
+annotated-doc==0.0.5
+click==8.5.0
+fastapi==0.149.0
+starlette==1.9.0
+uvicorn==0.54.0

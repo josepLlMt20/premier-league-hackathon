@@ -257,7 +257,9 @@ def test_startup_warms_the_same_refreshable_provider_used_for_inference(monkeypa
     monkeypatch.setenv("FOUNDRY_MODEL", "offline")
 
     async def run():
-        async with local_foundry_runner() as runner:
+        async with local_foundry_runner(project_endpoint="https://override.services.ai.azure.com/api/projects/explicit",
+                                        model="explicit-deployment") as runner:
+            assert "override.services.ai.azure.com" in str(runner.client.client.base_url)
             assert credential.calls == 1
             # Exercise the exact SDK authentication callback, without network I/O.
             assert await runner.client.client._api_key_provider() == "offline-token"

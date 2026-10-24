@@ -12,6 +12,7 @@ dependencies = ["pydantic==2.14.1"]
 [project.optional-dependencies]
 dev = ["pytest==9.1.1"]
 storage = ["azure-data-tables==12.7.0"]
+api = ["fastapi==0.149.0", "uvicorn==0.54.0", "python-dotenv==1.2.4"]
 agents = ["agent-framework-core==1.22.0", "agent-framework-foundry==1.15.0",
           "agent-framework-openai==1.17.0", "azure-identity==1.26.0", "python-dotenv==1.2.4",
           "openai==3.35.1"]
@@ -20,6 +21,7 @@ agents = ["agent-framework-core==1.22.0", "agent-framework-foundry==1.15.0",
 match-context = "match_context.cli:main"
 match-ingest = "match_context.ingest_cli:main"
 match-agents = "match_context.agent_cli:main"
+match-serve = "match_context.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

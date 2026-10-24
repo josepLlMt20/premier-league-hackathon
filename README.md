@@ -11,6 +11,7 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 - Four seeded 90-minute scenarios, immutable events, bounded snapshots, metrics, pattern detection and inspectable evidence are implemented with automated tests.
 - Persistent SQLite event history and resumable ingestion are implemented. An Azure Tables adapter shares the same contract and is tested offline through the real SDK.
 - The analyst/writer/reviewer workflow, scoped tools, claim validation and explicit factual fallback are implemented and tested offline, including the real Foundry SDK with a simulated transport. The live bilingual Foundry smoke has also passed; measured results and limitations are in [agent validation](docs/agents-validation.md).
+- The temporal HTTP API, bounded views/evidence, isolated context cache and two-generation admission limit are implemented. A local single-process server runs an independent resumable ingestion scheduler.
 - The web application and Azure application deployment are **not implemented yet**. Live Azure storage verification is still pending.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.
@@ -25,6 +26,7 @@ The connection probe is a small infrastructure check, not a demonstration of the
 - [Engine tests, independent review and implementation decisions](docs/engine-validation.md)
 - [Persistent ingestion: usage, tests and limits](docs/ingestion-validation.md)
 - [Agent workflow, validation and Foundry smoke status](docs/agents-validation.md)
+- [API usage, contracts, verification and limits](docs/api-validation.md)
 
 ## Run the match engine locally
 
@@ -32,7 +34,7 @@ Requires Python 3.13. No Azure account, credentials or model calls are needed fo
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-agents-dev.lock
+.\.venv\Scripts\python.exe -m pip install -r requirements-api-dev.lock
 .\.venv\Scripts\python.exe -m pip install --no-deps -e .
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe -m match_context --scenario main --until-second 1500
@@ -92,7 +94,35 @@ $env:RUN_FOUNDRY_LIVE = '1'
 Remove-Item Env:RUN_FOUNDRY_LIVE
 ```
 
-The full development environment is pinned in `requirements-agents-dev.lock`. `requirements-core-dev.lock` retains the smaller engine/storage environment; the full test suite now also needs the agent SDK dependencies. The historic connection-probe lockfile remains separate.
+The full backend development environment is pinned in `requirements-api-dev.lock`, including the unchanged agent/storage pins from `requirements-agents-dev.lock`. `requirements-core-dev.lock` retains the smaller engine/storage environment. The historic connection-probe lockfile remains separate.
+
+## Run the local API
+
+After installing the full backend environment above:
+
+```powershell
+$env:AGENT_MODE = 'factual'
+.\.venv\Scripts\python.exe -m match_context.server --database tmp/api-demo.sqlite3 --initial-second 1200
+```
+
+Open [the API documentation](http://127.0.0.1:8000/docs). The initial-second option ingests through that point before accepting requests; afterward one scheduler advances at 30 match seconds per wall second. Browsing, seeking and requesting context do not control ingestion. Ctrl+C shuts down the scheduler and preserves committed history. Restarting the same database resumes its monotonic clock; use a different file for a fresh stream.
+
+The default factual mode makes no model requests. To use the existing Foundry deployment, explicitly set `AGENT_MODE=foundry`, configure the `.env` project endpoint/model and sign in to Azure CLI. Provider startup failure leaves match reads and identified factual context available; retry startup after repairing authentication. `/healthz` is liveness only. The local launcher supports SQLite; `create_app` also accepts an existing Azure Tables adapter and an explicitly owned runner. No resources are provisioned.
+
+Public routes: `/api/matches`, per-match `/head`, `/cursor?available_second=…`, `/view?to_sequence=…`, and `POST /api/context` / `POST /api/evidence`. Error responses carry stable `error.code` values; generation saturation returns HTTP 429 with `Retry-After: 1`. All responses use `Cache-Control: no-store`; the bounded server-side context cache remains independent.
+
+Export and check the API schema without starting a server or contacting Azure:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/export_openapi.py
+.\.venv\Scripts\python.exe scripts/export_openapi.py --check
+cd web
+npm.cmd ci --ignore-scripts
+npm.cmd run api:types
+npm.cmd run api:check
+```
+
+The generated `web/openapi.json` and `web/src/api/schema.d.ts` prepare the future web client. There is no frontend application yet.
 
 ## Run the connection probe
 

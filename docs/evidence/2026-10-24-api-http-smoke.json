@@ -1,0 +1,32 @@
+{
+  "kind": "real local HTTP smoke; factual mode, no model requests",
+  "date": "2026-10-24",
+  "health_status": 200,
+  "catalog_status": 200,
+  "ingestion": {
+    "match_id": "m-c7261c37c40ffd45",
+    "sequence": 543,
+    "available_second": 3067,
+    "ingestion_state": "running"
+  },
+  "cursor": {
+    "match_id": "m-c7261c37c40ffd45",
+    "available_second": 900,
+    "to_sequence": 158,
+    "last_event_second": 900
+  },
+  "view_status": 200,
+  "context_status": 200,
+  "context_mode": "factual",
+  "context_result_status": "factual",
+  "bounded_facts": 24,
+  "cache_reused_result": true,
+  "future_time_status": 422,
+  "future_time_code": "future_time",
+  "future_evidence_status": 422,
+  "cache_control": "no-store",
+  "restart_position": {
+    "sequence": 606,
+    "available_second": 3429
+  }
+}

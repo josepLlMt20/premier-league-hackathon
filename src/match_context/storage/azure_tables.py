@@ -40,6 +40,11 @@ class AzureTableEventLog(EventLog):
     def metadata(self, match_id: str) -> MatchMetadata:
         return MatchMetadata.model_validate_json(self._header(match_id)["Metadata"])
 
+    def list_matches(self) -> tuple[MatchMetadata, ...]:
+        rows = self._client.query_entities("RowKey eq @header", parameters={"header": HEADER_KEY}, select=["Metadata"])
+        return tuple(sorted((MatchMetadata.model_validate_json(row["Metadata"]) for row in rows),
+                            key=lambda metadata: metadata.match_id))
+
     def position(self, match_id: str) -> IngestPosition:
         header = self._header(match_id)
         return IngestPosition(header["Sequence"], header["Clock"])
