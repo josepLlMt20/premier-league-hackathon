@@ -1,0 +1,6 @@
+src/api/schema.d.ts
+openapi.json
+package-lock.json
+e2e/capture-spacing.js
+public/licenses/
+src/.better-design/

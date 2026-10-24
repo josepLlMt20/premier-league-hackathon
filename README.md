@@ -12,7 +12,8 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 - Persistent SQLite event history and resumable ingestion are implemented. An Azure Tables adapter shares the same contract and is tested offline through the real SDK.
 - The analyst/writer/reviewer workflow, scoped tools, claim validation and explicit factual fallback are implemented and tested offline, including the real Foundry SDK with a simulated transport. The live bilingual Foundry smoke has also passed; measured results and limitations are in [agent validation](docs/agents-validation.md).
 - The temporal HTTP API, bounded views/evidence, isolated context cache and two-generation admission limit are implemented. A local single-process server runs an independent resumable ingestion scheduler.
-- The web application and Azure application deployment are **not implemented yet**. Live Azure storage verification is still pending.
+- The first fan web experience is implemented: bounded playback, Spanish/English catch-up, favorite team/detail preferences and inspectable evidence. It uses the selected Heyclicky design system. [Web usage and validation](docs/web-validation.md).
+- Professional briefings/overlays, Azure application deployment, live Azure storage verification and user studies remain pending.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.
 
@@ -27,6 +28,26 @@ The connection probe is a small infrastructure check, not a demonstration of the
 - [Persistent ingestion: usage, tests and limits](docs/ingestion-validation.md)
 - [Agent workflow, validation and Foundry smoke status](docs/agents-validation.md)
 - [API usage, contracts, verification and limits](docs/api-validation.md)
+- [Fan web experience, running instructions and verification](docs/web-validation.md)
+
+## Open the fan experience locally
+
+After the Python installation below, start the API in one terminal. Factual mode makes no model calls:
+
+```powershell
+$env:AGENT_MODE = 'factual'
+.\.venv\Scripts\python.exe -m match_context.server --database tmp/viewer.sqlite3 --initial-second 1500 --speed 1
+```
+
+In a second terminal (Node 22.23.1 or compatible):
+
+```powershell
+cd web
+npm.cmd ci
+npm.cmd run dev
+```
+
+Open `http://127.0.0.1:5173`. Playback starts paused at zero. Choose a minute, or **Ir al último minuto recibido**, then **Ponerme al día**. Only preferences survive a reload. To use the existing Foundry deployment, explicitly set `AGENT_MODE=foundry` before starting the backend; existing Azure identity/configuration is required and generation consumes model quota. Factual fallback remains visibly labeled.
 
 ## Run the match engine locally
 
@@ -65,7 +86,7 @@ After the local installation above, these commands use the same SQLite file acro
 
 The first score is 1–0, the second is 0–0 after the correction, and the third view still reports the earlier 1–0. Repeating a command adds no duplicate events. Ingestion cannot rewind; use `--view-second` to inspect earlier history, or choose a new database for a fresh shared stream.
 
-Add `--realtime --speed 30` to advance with wall time at 30 match seconds per real second; the default command advances immediately to the chosen point. The durable ingestion clock and the viewer's requested point are separate. Viewer playback controls will be implemented in the web application.
+Add `--realtime --speed 30` to advance with wall time at 30 match seconds per real second; the default command advances immediately to the chosen point. The durable ingestion clock and the viewer's requested point are separate. Web playback controls only change the viewer's position.
 
 The development lockfile includes the Azure SDK for offline adapter tests. SQLite itself uses Python's standard library. To install just the library with the Azure adapter, use `pip install -e '.[storage]'`; an existing `MatchEvents` table and a configured `TableClient` are required for live use. These commands create no Azure resources and make no model calls.
 

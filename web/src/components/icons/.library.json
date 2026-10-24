@@ -1,0 +1,7 @@
+{
+  "library": "mingcute",
+  "prefix": "mingcute",
+  "variant": "line",
+  "source": "iconify",
+  "icons": ["close-line", "fast-rewind-line", "pause-line", "play-line"]
+}

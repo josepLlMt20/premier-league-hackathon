@@ -1,0 +1,231 @@
+import { test, expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import type { ContextResult, MatchView } from '../src/api/client';
+const output = '../tmp/ui-validation';
+async function seek(page: Page, second: number) {
+  const input = page.getByRole('slider', { name: /Minuto del partido|Match minute/ });
+  await input.evaluate((element, second) => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+      element,
+      String(second),
+    );
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+  }, second);
+  await expect(page.getByTestId('playback-clock')).toHaveText(
+    new RegExp(
+      `${Math.floor(second / 60)
+        .toString()
+        .padStart(2, '0')}:${(second % 60).toString().padStart(2, '0')}`,
+    ),
+  );
+  await expect(page.getByTestId('match-view')).toBeVisible();
+}
+test('real bounded API, bilingual recap, evidence, rewind and preferences-only storage', async ({
+  page,
+}, info) => {
+  const requests: { path: string; method: string }[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/api/'))
+      requests.push({ path: request.url(), method: request.method() });
+  });
+  await page.goto('/');
+  await expect(page.getByTestId('playback-clock')).toHaveText('00:00');
+  await expect(page.getByTestId('match-view')).toHaveAttribute('data-cutoff', '0');
+  expect(
+    requests
+      .filter((r) => r.path.includes('/view?'))
+      .every((r) => r.path.endsWith('to_sequence=0')),
+  ).toBe(true);
+  expect(requests.some((r) => /fixture|events|ingest|advance|tick/.test(r.path))).toBe(false);
+  await seek(page, 1500);
+  const resultPromise = page.waitForResponse((response) => response.url().endsWith('/api/context'));
+  await page.getByRole('button', { name: 'Ponerme al día' }).click();
+  const result: ContextResult = await (await resultPromise).json();
+  expect(result.mode).toBe('scripted');
+  expect(result.status).toBe('verified');
+  expect(result.cards.length).toBeGreaterThan(0);
+  await expect(page.getByText('Prueba guiada · texto programado', { exact: true })).toBeVisible();
+  await expect(page.locator('.recap-summary')).toHaveText(result.summary);
+  const viewResponse = await page.request.get(
+    `/api/matches/${result.request.match_id}/view?to_sequence=${result.request.to_sequence}`,
+  );
+  const view: MatchView = await viewResponse.json();
+  expect(
+    view.recent_events.every(
+      (event) => event.sequence <= result.request.to_sequence && event.available_second <= 1500,
+    ),
+  ).toBe(true);
+  const evidencePromise = page.waitForResponse((response) =>
+    response.url().endsWith('/api/evidence'),
+  );
+  const trigger = page.getByRole('button', { name: 'Ver evidencia', exact: true });
+  await trigger.click();
+  const evidence = await (await evidencePromise).json();
+  expect(evidence.snapshot_id).toBe(result.snapshot_id);
+  expect(
+    evidence.events.every(
+      (event: { sequence: number; available_second: number }) =>
+        event.sequence <= result.request.to_sequence && event.available_second <= 1500,
+    ),
+  ).toBe(true);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(trigger).toBeFocused();
+  await expect(page.getByTestId('playback-clock')).toHaveText('25:00');
+  await page.getByText('Personalizar', { exact: true }).click();
+  await page.getByLabel('Idioma', { exact: true }).selectOption('en');
+  await expect(page.getByTestId('playback-clock')).toHaveText('25:00');
+  await expect(page.locator('.recap-summary')).toHaveCount(0);
+  const englishPromise = page.waitForResponse((response) =>
+    response.url().endsWith('/api/context'),
+  );
+  await page.getByRole('button', { name: 'Catch me up' }).click();
+  const english: ContextResult = await (await englishPromise).json();
+  expect(english.request.language).toBe('en');
+  expect(english.mode).toBe('scripted');
+  await expect(page.locator('.recap-summary')).toHaveText(english.summary);
+  await page.getByText('Personalize', { exact: true }).click();
+  mkdirSync(output, { recursive: true });
+  await page.screenshot({ path: `${output}/${info.project.name}-recap.png`, fullPage: true });
+  await seek(page, 0);
+  await expect(page.getByTestId('match-view')).toHaveAttribute('data-cutoff', '0');
+  await expect(page.getByTestId('score')).toHaveText('0 – 0');
+  await expect(page.locator('.recap-summary')).toHaveCount(0);
+  await expect(page.locator('.event-mark')).toHaveCount(0);
+  const storage = await page.evaluate(() => ({ ...localStorage }));
+  expect(Object.keys(storage)).toEqual(['match-context.preferences.v1']);
+  expect(JSON.parse(storage['match-context.preferences.v1'])).toEqual({
+    language: 'en',
+    depth: 'simple',
+    favorite_team_id: null,
+  });
+  expect(
+    requests
+      .filter((r) => r.method === 'POST')
+      .every((r) => /\/api\/(context|evidence)$/.test(r.path)),
+  ).toBe(true);
+  await page.reload();
+  await expect(page.getByTestId('playback-clock')).toHaveText('00:00');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+});
+
+test('pause and speed do not stop shared ingestion; keyboard controls work', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('match-view')).toBeVisible();
+  const metadata = await (await page.request.get('/api/matches')).json();
+  const head = () =>
+    page.request
+      .get(`/api/matches/${metadata[0].match_id}/head`)
+      .then((response) => response.json());
+  const before = await head();
+  await page.getByLabel('Velocidad', { exact: true }).selectOption('5');
+  await page.getByRole('button', { name: 'Reproducir', exact: true }).click();
+  await expect(page.getByTestId('playback-clock')).toHaveText('00:05');
+  await page.getByRole('button', { name: 'Pausar', exact: true }).click();
+  const paused = await page.getByTestId('playback-clock').textContent();
+  await expect
+    .poll(async () => (await head()).available_second)
+    .toBeGreaterThan(before.available_second + 2);
+  await expect(page.getByTestId('playback-clock')).toHaveText(paused!);
+  const slider = page.getByRole('slider', { name: 'Minuto del partido' });
+  await slider.focus();
+  await page.keyboard.press('Home');
+  await expect(page.getByTestId('playback-clock')).toHaveText('00:00');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByTestId('playback-clock')).toHaveText('00:01');
+});
+
+test('accessible responsive rendering, fonts, measured spacing and real DOM', async ({
+  page,
+}, info) => {
+  await page.goto('/');
+  await expect(page.getByTestId('match-view')).toBeVisible();
+  await seek(page, 1500);
+  await page.getByRole('button', { name: 'Ponerme al día' }).click();
+  await expect(page.locator('.recap-summary')).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  const fonts = await page.evaluate(() => ({
+    family: getComputedStyle(document.body).fontFamily,
+    loaded: document.fonts.check('16px "Inter"'),
+  }));
+  expect(fonts.loaded).toBe(true);
+  expect(fonts.family).toContain('Inter');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  const a11y = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+  mkdirSync(output, { recursive: true });
+  writeFileSync(
+    `${output}/${info.project.name}-axe.json`,
+    JSON.stringify({ violations: a11y.violations, passes: a11y.passes.length, fonts }, null, 2),
+  );
+  expect(a11y.violations).toEqual([]);
+  const dimensions = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    viewport: innerWidth,
+  }));
+  expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.viewport);
+  const capture = await page.evaluate(() => ({
+    name: 'fan-recap',
+    viewport: { width: innerWidth, height: innerHeight, devicePixelRatio },
+    elements: [
+      ...document.querySelectorAll(
+        '.app-shell,.viewer-grid,.match-panel,.catchup-panel,.window-bar,.catchup-body,.playback-controls,button,select,input,summary',
+      ),
+    ].map((element, index) => {
+      const rect = element.getBoundingClientRect(),
+        style = getComputedStyle(element);
+      return {
+        id: `e-${index}`,
+        label: element.textContent?.trim().slice(0, 60),
+        tag: element.tagName.toLowerCase(),
+        interactive: element.matches('button,select,input,summary'),
+        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+        style: {
+          display: style.display,
+          columnGap: style.columnGap,
+          rowGap: style.rowGap,
+          padding: {
+            top: parseFloat(style.paddingTop),
+            right: parseFloat(style.paddingRight),
+            bottom: parseFloat(style.paddingBottom),
+            left: parseFloat(style.paddingLeft),
+          },
+        },
+      };
+    }),
+  }));
+  writeFileSync(`${output}/${info.project.name}-spacing.json`, JSON.stringify(capture));
+  for (const width of [...new Set([page.viewportSize()!.width, 1440, 1728, 390])]) {
+    await page.setViewportSize({ width, height: 1100 });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const state = await page.evaluate(
+      readFileSync(new URL('./capture-spacing.js', import.meta.url), 'utf8'),
+    );
+    writeFileSync(`${output}/spacing-${width}.json`, JSON.stringify(state));
+  }
+  await page.setViewportSize(info.project.use.viewport!);
+  await page.screenshot({ path: `${output}/${info.project.name}-spanish.png`, fullPage: true });
+  await page.getByRole('button', { name: 'Ver evidencia', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  const modalA11y = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+  expect(modalA11y.violations).toEqual([]);
+  await page.screenshot({ path: `${output}/${info.project.name}-evidence.png`, fullPage: true });
+  await page.keyboard.press('Escape');
+  await page.getByRole('link', { name: 'Ir al partido' }).focus();
+  await expect(page.getByRole('link', { name: 'Ir al partido' })).toBeInViewport();
+  expect(
+    (await page.getByRole('link', { name: 'Ir al partido' }).boundingBox())!.height,
+  ).toBeGreaterThanOrEqual(44);
+  await page.keyboard.press('Tab');
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `${output}/${info.project.name}-320.png`, fullPage: true });
+});
