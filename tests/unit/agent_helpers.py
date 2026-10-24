@@ -2,6 +2,15 @@ from match_context.agents.base import AgentOutput, CardDraft, ReviewDecision
 from match_context.domain.contracts import Claim
 
 
+def compact_card(draft, codec):
+    card = {"story_id": draft.story_id}
+    for field, claim in zip(("headline", "explanation", "line", "overlay"), draft.claims()):
+        card[field] = codec.encode({"text": claim.text, "facts": list(claim.fact_ids),
+                                    "kind": claim.kind,
+                                    "limits": ["observed_association"] if claim.limitations else []})
+    return card
+
+
 def draft_for(story):
     candidate = story["candidate"]
     facts = [f for f in story["facts"] if f["name"] == {

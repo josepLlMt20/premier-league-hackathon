@@ -5,7 +5,7 @@ Scope: task 4 of the approved plan. The analyst, writer and reviewer use one clo
 ## Workflow
 
 1. Reconstruct canonical facts and supported patterns using the existing deterministic engine. Every supplied fact is checked against a fresh calculation for its own interval; forged values or references cannot become trusted facts by reusing an identifier.
-2. The analyst uses read-only snapshot tools to select candidate IDs. A simple fan receives one selected story; the model is instructed to select up to two for detailed fans or commentators, under the public cap of three.
+2. The application prefetches `list_candidates` at the already-authorized cutoff and supplies its actual result to the analyst, avoiding a model turn whose only purpose was requesting these fixed arguments. The tool call is charged and traced as `candidates_prefetched`. The analyst still makes the selection and can request further facts or events. A simple fan receives one selected story; the model is instructed to select up to two for detailed fans or commentators, under the public cap of three.
 3. The writer returns typed cards containing observed or tentative interpretation claims. Four claims cover the headline, explanation, suggested line and overlay. Each cites its own story's canonical facts/events.
 4. Deterministic checks reject unknown references, unrelated support, literal Unicode numeric symbols (before and after normalization), raw known match names, invalid markers, duplicate claim IDs, unsupported interpretations, strong causal wording and overlays longer than 140 rendered characters. Unicode marker normalization uses the same representation for validation and rendering.
 5. The reviewer judges metric labels, team/window correspondence, language, audience, qualifiers and interpretation. Rejected cards get one batch repair attempt; accepted cards survive while twice-rejected stories are discarded. The summary is assembled only from accepted lines. Invalid JSON also gets at most one writer repair.
@@ -23,12 +23,16 @@ Public traces contain role/decision labels, allowed tool names, attempted provid
 
 ## Foundry and limits
 
-The adapter uses Microsoft Agent Framework `Agent` and `FoundryChatClient`, a Pydantic `response_format`, the existing deployed model and Azure CLI identity. Connection setup uses an asynchronous credential and warms the token before per-request timing. No resources or model deployments are created. HTTP retries are disabled.
+The adapter uses Microsoft Agent Framework `Agent` and `FoundryChatClient`, a Pydantic `response_format`, the existing deployed model and Azure CLI identity. Each role requests only its own output schema. A provider-only codec uses integer fact indexes and reconstructs canonical references and unique claim IDs before the existing validation pipeline. Each claim still supplies explicit support. Unknown indexes, unsupported caveat codes, wrong-story support, malformed markers and free numbers remain rejected. Public `ContextResult` contracts retain canonical IDs; these internal indexes are never public claim references.
+
+The writer chooses from `observed_association` and `sample_limited` caveat codes, localized by code; full source and pattern limitations are still added independently. This prevents generated negative-causation disclaimers from triggering the conservative causal-language filter, and avoids copying English source limitations into Spanish output. Cost: custom model-written limitation prose is unavailable through this provider adapter. Scripted runners and the public Claim contract retain their original expressiveness.
+
+Connection setup warms the **same** refreshable [Azure Identity bearer-token provider](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.aio?view=azure-python) passed to inference. The earlier raw-credential warmup left the SDK's separate provider cold. The regression proves that inference reuses the valid token and that the provider reacquires it near expiry. Tokens remain in the SDK's memory, are not logged or written into the repository, and security policies are unchanged. No resources or model deployments are created. HTTP retries are disabled.
 
 | Budget | Limit | Enforcement |
 | --- | --- | --- |
 | Model turns | Seven across all roles and repairs | Chat middleware reserves before each SDK provider turn, including the continuation after a tool result. |
-| Tools | Eight across a request | Middleware reserves model-requested calls before execution, including unknown names or invalid arguments. Scoped wrappers do not charge the same call twice. Direct offline tools enforce the same budget. |
+| Tools | Eight across a request | The initial application prefetch is charged through the scoped tool. Middleware reserves any additional model-requested calls before execution, including unknown names or invalid arguments. Scoped wrappers do not charge the same call twice. Direct offline tools enforce the same budget. |
 | Output | 1200 tokens per provider turn | Run options serialize into the actual SDK request body. |
 | Request duration | Ten seconds | Request-local monotonic deadline and cancellable asynchronous role calls. Timeout returns identified factual output. |
 
@@ -44,7 +48,18 @@ On 23 October, the first live attempt stopped during token acquisition with Azur
 
 On 24 October, interactive sign-in on the participant's PC succeeded and a fresh Foundry inference token was obtained. The opted-in live test then reached the real deployment: the analyst called `list_candidates`, completed its selection and handed off to the writer. The request reached its ten-second deadline during writing and correctly returned identified factual fallback: zero story cards, rejection `deadline`, three attempted model turns, one tool call, 6003 reported input tokens and 98 reported output tokens from completed responses, and 10.003 seconds of request time. Usage from a cancelled/incomplete response is not represented by those counters. The test failed its required verified-output assertion and therefore did not run the second English request. Reports remain in ignored `tmp/foundry-agents/`.
 
-Authentication is resolved for this session, but successful live three-role output, bilingual isolation and acceptable generation latency remain pending. The earlier 20 October single-agent connection probe remains historical evidence only. The ten-second limit was not raised to make the live test pass.
+Authentication was resolved for this session. The initial latency profile measured 2.559 seconds for requesting the known candidate query and 2.304 seconds for selection; writing did not finish before the deadline. Compact wire schemas alone did not pass. Subsequent diagnostic runs also exposed reference arrays containing marker strings and generated disclaimers rejected by the existing causal filter. Integer support indexes and localized finite caveats address those format failures without weakening evidence or prose validation. These exploratory failures are not counted as successful smoke runs.
+
+After optimization, the unchanged opted-in bilingual test passed: both requests produced verified Foundry output, all three real roles, actual scoped retrieval, positive usage, validated claims and isolated trace/snapshot cutoffs. Two additional detailed-profile requests through a shared runner also produced accepted cards with no deterministic validation errors. Sanitized public outputs, canonical claim references and traces are saved in [the smoke evidence](evidence/2026-10-24-foundry-agents-smoke.json).
+
+| Request | Cards | Model turns | Tool executions | Input / output tokens | Request seconds |
+| --- | --- | --- | --- | --- | --- |
+| Simple fan, Spanish, second 1500 | 1 | 3 | 1 | 7891 / 326 | 7.4742 |
+| Simple fan, English, second 1490 | 1 | 3 | 1 | 6272 / 341 | 6.9011 |
+| Detailed commentator, Spanish, second 1500, favorite amber | 2 | 3 | 1 | 9223 / 626 | 9.7257 |
+| Detailed fan, English, second 1500, favorite amber | 2 | 3 | 1 | 9168 / 580 | 9.5188 |
+
+These are four measured requests, not a success-rate or tail-latency benchmark. Startup/authentication is separate; detailed output is close to the deadline and model/network variability or a repair can still produce factual fallback. Semantic review can miss subtle paraphrases; the smoke does not prove every prose assertion. The earlier 20 October single-agent connection probe remains historical evidence only. The ten-second limit was not raised.
 
 ## Decisions and limits
 
@@ -63,10 +78,16 @@ Offline verification before independent review: 188 tests passed, one explicitly
 
 The fresh read-only reviewer independently ran the initial suite (188 passed, one live test skipped) and reported three Important findings, no Critical findings and no separate Minors. All entered one fix pass:
 
-1. The real SDK serialized generation constraints unsupported by Azure. `FoundryOutput` now removes those keywords and defaults from its provider-specific Pydantic JSON Schema while preserving the original compiled local validation. The HTTP-transport regression checks the actual sent schema, and a separate case verifies local array limits still reject oversized output. This follows [Azure structured-output schema limitations](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/structured-outputs); live endpoint acceptance still needs the pending smoke.
+1. The real SDK serialized generation constraints unsupported by Azure. The provider-specific output schemas remove those keywords and defaults while preserving compiled local validation. The HTTP-transport regression checks the actual sent schema, and a separate case verifies local array limits still reject oversized output. This follows [Azure structured-output schema limitations](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/structured-outputs); the later live smoke accepted these schemas.
 2. SDK-wrapped Pydantic/JSON output errors bypassed the repair path and lost usage when parsing failed. The adapter now classifies these as invalid output and records only aggregate usage in a response hook before structured parsing. A request-local ContextVar keeps concurrent calls separate. Actual-SDK regressions feed malformed JSON and schema-invalid writer output, then a repaired card and reviewer approval: four HTTP turns are observed, all 76 input and 28 output tokens are retained. Successful responses are not double-counted; concurrent request counters remain independent.
 3. Decimal-digit matching missed numerical glyphs such as Tamil numerals and Roman symbols. Claim text and limitations now check Unicode numeric characters in both the original and normalized representations, outside trusted markers. The Tamil/Roman cases failed before the fix and pass afterward; circled digits and fractions remain covered.
 
 The regression run before fixes had seven failures and five passing controls. After fixes all twelve targeted cases passed. Additional local-cap and concurrent-usage checks also passed. Final isolated-environment verification: **200 passed, one opted-in live test skipped**, with warnings treated as errors. Dependency installation, installed CLI entry point and `pip check` passed. The author verified the fixes with tests; no second independent review was performed.
 
 Review boundaries were explicitly retained: authentication, actual model quality and latency need a live run; unchanged persistence remains task 2; API/browser/cache/playback/export and deployment are later tasks; free-prose semantic truth, spelled-out quantities and name/causal paraphrases require semantic review; deliberately forged internal snapshots are outside the trusted internal contract; the two-story generation target is an explicit scope decision. No deferred minor findings remain.
+
+## Latency optimization verification (24 October)
+
+The regressions cover role-specific wire schemas and strict local caps, compact-to-canonical support roundtrips, unknown references, request-local indexes, localized interpretation caveats, charged application prefetch, optional model-requested integer `read_facts`, the three-turn SDK happy path, malformed-output repair with aggregate usage, and reuse/near-expiry refresh of the actual authentication provider. These changes were tested RED to GREEN; no validation rule, deadline, model or budget limit was relaxed.
+
+Final isolated pinned-environment suite: **211 passed, one opted-in live test skipped**, with warnings treated as errors, in 21.18 seconds. `pip check` and `git diff --check` passed. The separate opted-in bilingual Azure test passed in 19.64 seconds including startup and cleanup; per-request measurements and additional detailed cases are above. This optimization receives a fresh review of its delta; the earlier whole-agent review and its fixes remain historical records.

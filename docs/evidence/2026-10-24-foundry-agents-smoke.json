@@ -1,0 +1,746 @@
+{
+  "date": "2026-10-24",
+  "model_deployment": "gpt-5-mini",
+  "scenario": "main",
+  "seed": 7,
+  "deadline_seconds": 10,
+  "notes": [
+    "Observed request latencies exclude startup authentication.",
+    "Candidate retrieval is application-prefetched and charged; each of three roles is a real model call.",
+    "Four requests are not a reliability or tail-latency benchmark. Semantic review is not a proof of truth."
+  ],
+  "results": [
+    {
+      "verification": "opt-in bilingual smoke",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "fan",
+        "depth": "simple",
+        "language": "es",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "summary": "Ámbar FC pasó de 0 a 148 en puntos de calidad de tiro.",
+      "summary_claims": [
+        {
+          "claim_id": "s-5dca8006688a3f64cbb772ee-suggested_line",
+          "kind": "observed",
+          "text": "{{entity:amber}} pasó de {{fact:f-568f19b5cd92c0ea7b682199}} a {{fact:f-803390e47a2fbf71c6fba12d}} en puntos de calidad de tiro.",
+          "fact_ids": [
+            "f-568f19b5cd92c0ea7b682199",
+            "f-803390e47a2fbf71c6fba12d"
+          ],
+          "event_ids": [],
+          "limitations": []
+        }
+      ],
+      "cards": [
+        {
+          "story_id": "s-5dca8006688a3f64cbb772ee",
+          "headline": "Ámbar FC genera más oportunidades de tiro",
+          "explanation": "En la ventana reciente 148 frente a la anterior 0, la calidad acumulada de tiros de Ámbar FC subió notablemente.",
+          "suggested_line": "Ámbar FC pasó de 0 a 148 en puntos de calidad de tiro.",
+          "overlay_text": "Más y mejores tiros: Ámbar FC 2 tiros vs 1 antes.",
+          "claims": [
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-headline",
+              "kind": "observed",
+              "text": "{{entity:amber}} genera más oportunidades de tiro",
+              "fact_ids": [
+                "f-803390e47a2fbf71c6fba12d",
+                "f-568f19b5cd92c0ea7b682199"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-explanation",
+              "kind": "interpretation",
+              "text": "En la ventana reciente {{fact:f-803390e47a2fbf71c6fba12d}} frente a la anterior {{fact:f-568f19b5cd92c0ea7b682199}}, la calidad acumulada de tiros de {{entity:amber}} subió notablemente.",
+              "fact_ids": [
+                "f-803390e47a2fbf71c6fba12d",
+                "f-568f19b5cd92c0ea7b682199"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Asociación observada en datos sintéticos.",
+                "Conclusión limitada a la muestra de eventos disponible."
+              ]
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-suggested_line",
+              "kind": "observed",
+              "text": "{{entity:amber}} pasó de {{fact:f-568f19b5cd92c0ea7b682199}} a {{fact:f-803390e47a2fbf71c6fba12d}} en puntos de calidad de tiro.",
+              "fact_ids": [
+                "f-568f19b5cd92c0ea7b682199",
+                "f-803390e47a2fbf71c6fba12d"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-overlay",
+              "kind": "observed",
+              "text": "Más y mejores tiros: {{entity:amber}} {{fact:f-3bf99f638962e2f0d85411cf}} tiros vs {{fact:f-c99b1bada58fd02a2216a747}} antes.",
+              "fact_ids": [
+                "f-3bf99f638962e2f0d85411cf",
+                "f-c99b1bada58fd02a2216a747"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Datos sintéticos; el cambio observado no demuestra una causa táctica.",
+            "La calidad de ocasión es una heurística del simulador, no xG calibrado.",
+            "Asociación observada en datos sintéticos.",
+            "Conclusión limitada a la muestra de eventos disponible."
+          ]
+        }
+      ],
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 7891,
+        "output_tokens": 326,
+        "elapsed_seconds": 7.4742
+      }
+    },
+    {
+      "verification": "opt-in bilingual smoke",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 266,
+        "role": "fan",
+        "depth": "simple",
+        "language": "en",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:266:b6eb177cd3a32bf7",
+      "status": "verified",
+      "mode": "foundry",
+      "summary": "High recoveries for Ámbar FC went from 1 to 4 between the two windows",
+      "summary_claims": [
+        {
+          "claim_id": "s-fde9d1ac66aa048e57161de9-suggested_line",
+          "kind": "observed",
+          "text": "High recoveries for {{entity:amber}} went from {{fact:f-fee6cc203213e1a135c2e809}} to {{fact:f-675383f4f27605bbf129bd65}} between the two windows",
+          "fact_ids": [
+            "f-fee6cc203213e1a135c2e809",
+            "f-675383f4f27605bbf129bd65"
+          ],
+          "event_ids": [],
+          "limitations": []
+        }
+      ],
+      "cards": [
+        {
+          "story_id": "s-fde9d1ac66aa048e57161de9",
+          "headline": "Ámbar FC increased high recoveries late in the window",
+          "explanation": "Ámbar FC had 4 high recoveries after 1 in the earlier window, showing a rise in recoveries starting in deeper attacking locations",
+          "suggested_line": "High recoveries for Ámbar FC went from 1 to 4 between the two windows",
+          "overlay_text": "Ámbar FC high recoveries: 1 → 4",
+          "claims": [
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-headline",
+              "kind": "observed",
+              "text": "{{entity:amber}} increased high recoveries late in the window",
+              "fact_ids": [
+                "f-675383f4f27605bbf129bd65"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-explanation",
+              "kind": "interpretation",
+              "text": "{{entity:amber}} had {{fact:f-675383f4f27605bbf129bd65}} high recoveries after {{fact:f-fee6cc203213e1a135c2e809}} in the earlier window, showing a rise in recoveries starting in deeper attacking locations",
+              "fact_ids": [
+                "f-675383f4f27605bbf129bd65",
+                "f-fee6cc203213e1a135c2e809"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Observed association in synthetic data.",
+                "Conclusion limited to the available event sample."
+              ]
+            },
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-suggested_line",
+              "kind": "observed",
+              "text": "High recoveries for {{entity:amber}} went from {{fact:f-fee6cc203213e1a135c2e809}} to {{fact:f-675383f4f27605bbf129bd65}} between the two windows",
+              "fact_ids": [
+                "f-fee6cc203213e1a135c2e809",
+                "f-675383f4f27605bbf129bd65"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-overlay",
+              "kind": "observed",
+              "text": "{{entity:amber}} high recoveries: {{fact:f-fee6cc203213e1a135c2e809}} → {{fact:f-675383f4f27605bbf129bd65}}",
+              "fact_ids": [
+                "f-fee6cc203213e1a135c2e809",
+                "f-675383f4f27605bbf129bd65"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 266,
+            "start_second": 1188,
+            "end_second": 1488
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 266,
+            "start_second": 888,
+            "end_second": 1188
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation.",
+            "Observed association in synthetic data.",
+            "Conclusion limited to the available event sample."
+          ]
+        }
+      ],
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 6272,
+        "output_tokens": 341,
+        "elapsed_seconds": 6.9011
+      }
+    },
+    {
+      "verification": "additional profile smoke",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "detailed",
+        "language": "es",
+        "favorite_team_id": "amber"
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "summary": "Más y mejores intentos: la calidad de tiro de Ámbar FC subió a 148 con 2 disparos en la ventana reciente. Ámbar FC pasó de 1 a 4 recuperaciones altas en la última ventana.",
+      "summary_claims": [
+        {
+          "claim_id": "s-5dca8006688a3f64cbb772ee-suggested_line",
+          "kind": "observed",
+          "text": "Más y mejores intentos: la calidad de tiro de {{entity:amber}} subió a {{fact:f-803390e47a2fbf71c6fba12d}} con {{fact:f-3bf99f638962e2f0d85411cf}} disparos en la ventana reciente.",
+          "fact_ids": [
+            "f-803390e47a2fbf71c6fba12d",
+            "f-3bf99f638962e2f0d85411cf"
+          ],
+          "event_ids": [],
+          "limitations": []
+        },
+        {
+          "claim_id": "s-cac00907f3f9b0a5cd22bccb-suggested_line",
+          "kind": "observed",
+          "text": "{{entity:amber}} pasó de {{fact:f-2f8eebbe68b9292775ef0acf}} a {{fact:f-a1bc53c3c660c8dafc8f457e}} recuperaciones altas en la última ventana.",
+          "fact_ids": [
+            "f-a1bc53c3c660c8dafc8f457e",
+            "f-2f8eebbe68b9292775ef0acf"
+          ],
+          "event_ids": [],
+          "limitations": []
+        }
+      ],
+      "cards": [
+        {
+          "story_id": "s-5dca8006688a3f64cbb772ee",
+          "headline": "Ráfaga de tiros de mayor calidad para Ámbar FC",
+          "explanation": "Ámbar FC aumentó su suma de calidad de disparo de 0 a 148 mientras sus remates subieron de 1 a 2.",
+          "suggested_line": "Más y mejores intentos: la calidad de tiro de Ámbar FC subió a 148 con 2 disparos en la ventana reciente.",
+          "overlay_text": "Calidad de tiros Ámbar FC: 148 (antes 0); remates 2 (antes 1).",
+          "claims": [
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-headline",
+              "kind": "observed",
+              "text": "Ráfaga de tiros de mayor calidad para {{entity:amber}}",
+              "fact_ids": [
+                "f-803390e47a2fbf71c6fba12d",
+                "f-568f19b5cd92c0ea7b682199"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-explanation",
+              "kind": "interpretation",
+              "text": "{{entity:amber}} aumentó su suma de calidad de disparo de {{fact:f-568f19b5cd92c0ea7b682199}} a {{fact:f-803390e47a2fbf71c6fba12d}} mientras sus remates subieron de {{fact:f-c99b1bada58fd02a2216a747}} a {{fact:f-3bf99f638962e2f0d85411cf}}.",
+              "fact_ids": [
+                "f-803390e47a2fbf71c6fba12d",
+                "f-568f19b5cd92c0ea7b682199",
+                "f-c99b1bada58fd02a2216a747",
+                "f-3bf99f638962e2f0d85411cf"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Asociación observada en datos sintéticos.",
+                "Conclusión limitada a la muestra de eventos disponible."
+              ]
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-suggested_line",
+              "kind": "observed",
+              "text": "Más y mejores intentos: la calidad de tiro de {{entity:amber}} subió a {{fact:f-803390e47a2fbf71c6fba12d}} con {{fact:f-3bf99f638962e2f0d85411cf}} disparos en la ventana reciente.",
+              "fact_ids": [
+                "f-803390e47a2fbf71c6fba12d",
+                "f-3bf99f638962e2f0d85411cf"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-overlay",
+              "kind": "observed",
+              "text": "Calidad de tiros {{entity:amber}}: {{fact:f-803390e47a2fbf71c6fba12d}} (antes {{fact:f-568f19b5cd92c0ea7b682199}}); remates {{fact:f-3bf99f638962e2f0d85411cf}} (antes {{fact:f-c99b1bada58fd02a2216a747}}).",
+              "fact_ids": [
+                "f-803390e47a2fbf71c6fba12d",
+                "f-568f19b5cd92c0ea7b682199",
+                "f-3bf99f638962e2f0d85411cf",
+                "f-c99b1bada58fd02a2216a747"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Datos sintéticos; el cambio observado no demuestra una causa táctica.",
+            "La calidad de ocasión es una heurística del simulador, no xG calibrado.",
+            "Asociación observada en datos sintéticos.",
+            "Conclusión limitada a la muestra de eventos disponible."
+          ]
+        },
+        {
+          "story_id": "s-cac00907f3f9b0a5cd22bccb",
+          "headline": "Más recuperaciones altas de Ámbar FC",
+          "explanation": "La cantidad de recuperaciones que empezaron en zona avanzada subió de 1 a 4 en la ventana reciente, lo que acompaña al aumento de sus remates.",
+          "suggested_line": "Ámbar FC pasó de 1 a 4 recuperaciones altas en la última ventana.",
+          "overlay_text": "Recuperaciones altas Ámbar FC: 4 (antes 1).",
+          "claims": [
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-headline",
+              "kind": "observed",
+              "text": "Más recuperaciones altas de {{entity:amber}}",
+              "fact_ids": [
+                "f-a1bc53c3c660c8dafc8f457e",
+                "f-2f8eebbe68b9292775ef0acf"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-explanation",
+              "kind": "interpretation",
+              "text": "La cantidad de recuperaciones que empezaron en zona avanzada subió de {{fact:f-2f8eebbe68b9292775ef0acf}} a {{fact:f-a1bc53c3c660c8dafc8f457e}} en la ventana reciente, lo que acompaña al aumento de sus remates.",
+              "fact_ids": [
+                "f-a1bc53c3c660c8dafc8f457e",
+                "f-2f8eebbe68b9292775ef0acf"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Asociación observada en datos sintéticos."
+              ]
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-suggested_line",
+              "kind": "observed",
+              "text": "{{entity:amber}} pasó de {{fact:f-2f8eebbe68b9292775ef0acf}} a {{fact:f-a1bc53c3c660c8dafc8f457e}} recuperaciones altas en la última ventana.",
+              "fact_ids": [
+                "f-a1bc53c3c660c8dafc8f457e",
+                "f-2f8eebbe68b9292775ef0acf"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-overlay",
+              "kind": "observed",
+              "text": "Recuperaciones altas {{entity:amber}}: {{fact:f-a1bc53c3c660c8dafc8f457e}} (antes {{fact:f-2f8eebbe68b9292775ef0acf}}).",
+              "fact_ids": [
+                "f-a1bc53c3c660c8dafc8f457e",
+                "f-2f8eebbe68b9292775ef0acf"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Datos sintéticos; el cambio observado no demuestra una causa táctica.",
+            "Asociación observada en datos sintéticos."
+          ]
+        }
+      ],
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 9223,
+        "output_tokens": 626,
+        "elapsed_seconds": 9.7257
+      }
+    },
+    {
+      "verification": "additional profile smoke",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "fan",
+        "depth": "detailed",
+        "language": "en",
+        "favorite_team_id": "amber"
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "summary": "Ámbar FC's recovery count rose from 1 to 4 in the later window. Ámbar FC's heuristic shot-quality rose from 0 on 1 shot to 148 on 2 shots.",
+      "summary_claims": [
+        {
+          "claim_id": "s-cac00907f3f9b0a5cd22bccb-suggested_line",
+          "kind": "observed",
+          "text": "{{entity:amber}}'s recovery count rose from {{fact:f-2f8eebbe68b9292775ef0acf}} to {{fact:f-a1bc53c3c660c8dafc8f457e}} in the later window.",
+          "fact_ids": [
+            "f-2f8eebbe68b9292775ef0acf",
+            "f-a1bc53c3c660c8dafc8f457e"
+          ],
+          "event_ids": [],
+          "limitations": []
+        },
+        {
+          "claim_id": "s-5dca8006688a3f64cbb772ee-suggested_line",
+          "kind": "observed",
+          "text": "{{entity:amber}}'s heuristic shot-quality rose from {{fact:f-568f19b5cd92c0ea7b682199}} on {{fact:f-c99b1bada58fd02a2216a747}} shot to {{fact:f-803390e47a2fbf71c6fba12d}} on {{fact:f-3bf99f638962e2f0d85411cf}} shots.",
+          "fact_ids": [
+            "f-568f19b5cd92c0ea7b682199",
+            "f-803390e47a2fbf71c6fba12d",
+            "f-c99b1bada58fd02a2216a747",
+            "f-3bf99f638962e2f0d85411cf"
+          ],
+          "event_ids": [],
+          "limitations": []
+        }
+      ],
+      "cards": [
+        {
+          "story_id": "s-cac00907f3f9b0a5cd22bccb",
+          "headline": "Ámbar FC increased high-value recoveries",
+          "explanation": "Ámbar FC had 4 high-start recoveries after 1 in the prior window.",
+          "suggested_line": "Ámbar FC's recovery count rose from 1 to 4 in the later window.",
+          "overlay_text": "Recoveries up 4 (was 1).",
+          "claims": [
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-headline",
+              "kind": "observed",
+              "text": "{{entity:amber}} increased high-value recoveries",
+              "fact_ids": [
+                "f-a1bc53c3c660c8dafc8f457e"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-explanation",
+              "kind": "interpretation",
+              "text": "{{entity:amber}} had {{fact:f-a1bc53c3c660c8dafc8f457e}} high-start recoveries after {{fact:f-2f8eebbe68b9292775ef0acf}} in the prior window.",
+              "fact_ids": [
+                "f-2f8eebbe68b9292775ef0acf",
+                "f-a1bc53c3c660c8dafc8f457e"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Observed association in synthetic data.",
+                "Conclusion limited to the available event sample."
+              ]
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-suggested_line",
+              "kind": "observed",
+              "text": "{{entity:amber}}'s recovery count rose from {{fact:f-2f8eebbe68b9292775ef0acf}} to {{fact:f-a1bc53c3c660c8dafc8f457e}} in the later window.",
+              "fact_ids": [
+                "f-2f8eebbe68b9292775ef0acf",
+                "f-a1bc53c3c660c8dafc8f457e"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-overlay",
+              "kind": "observed",
+              "text": "Recoveries up {{fact:f-a1bc53c3c660c8dafc8f457e}} (was {{fact:f-2f8eebbe68b9292775ef0acf}}).",
+              "fact_ids": [
+                "f-2f8eebbe68b9292775ef0acf",
+                "f-a1bc53c3c660c8dafc8f457e"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation.",
+            "Observed association in synthetic data.",
+            "Conclusion limited to the available event sample."
+          ]
+        },
+        {
+          "story_id": "s-5dca8006688a3f64cbb772ee",
+          "headline": "Shot-quality points jumped for Ámbar FC",
+          "explanation": "Ámbar FC produced 148 shot-quality points with 2 shots versus 0 points and 1 shot earlier, using a heuristic not calibrated to xG.",
+          "suggested_line": "Ámbar FC's heuristic shot-quality rose from 0 on 1 shot to 148 on 2 shots.",
+          "overlay_text": "Shot-quality: 148 (was 0).",
+          "claims": [
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-headline",
+              "kind": "observed",
+              "text": "Shot-quality points jumped for {{entity:amber}}",
+              "fact_ids": [
+                "f-803390e47a2fbf71c6fba12d"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-explanation",
+              "kind": "interpretation",
+              "text": "{{entity:amber}} produced {{fact:f-803390e47a2fbf71c6fba12d}} shot-quality points with {{fact:f-3bf99f638962e2f0d85411cf}} shots versus {{fact:f-568f19b5cd92c0ea7b682199}} points and {{fact:f-c99b1bada58fd02a2216a747}} shot earlier, using a heuristic not calibrated to xG.",
+              "fact_ids": [
+                "f-568f19b5cd92c0ea7b682199",
+                "f-803390e47a2fbf71c6fba12d",
+                "f-c99b1bada58fd02a2216a747",
+                "f-3bf99f638962e2f0d85411cf"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Observed association in synthetic data.",
+                "Conclusion limited to the available event sample."
+              ]
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-suggested_line",
+              "kind": "observed",
+              "text": "{{entity:amber}}'s heuristic shot-quality rose from {{fact:f-568f19b5cd92c0ea7b682199}} on {{fact:f-c99b1bada58fd02a2216a747}} shot to {{fact:f-803390e47a2fbf71c6fba12d}} on {{fact:f-3bf99f638962e2f0d85411cf}} shots.",
+              "fact_ids": [
+                "f-568f19b5cd92c0ea7b682199",
+                "f-803390e47a2fbf71c6fba12d",
+                "f-c99b1bada58fd02a2216a747",
+                "f-3bf99f638962e2f0d85411cf"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-5dca8006688a3f64cbb772ee-overlay",
+              "kind": "observed",
+              "text": "Shot-quality: {{fact:f-803390e47a2fbf71c6fba12d}} (was {{fact:f-568f19b5cd92c0ea7b682199}}).",
+              "fact_ids": [
+                "f-568f19b5cd92c0ea7b682199",
+                "f-803390e47a2fbf71c6fba12d"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation.",
+            "Shot quality is a simulator heuristic, not calibrated xG.",
+            "Observed association in synthetic data.",
+            "Conclusion limited to the available event sample."
+          ]
+        }
+      ],
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 9168,
+        "output_tokens": 580,
+        "elapsed_seconds": 9.5188
+      }
+    }
+  ]
+}

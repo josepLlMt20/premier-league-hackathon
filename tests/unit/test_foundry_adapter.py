@@ -8,6 +8,7 @@ import pytest
 from agent_framework.foundry import FoundryChatClient
 from match_context.agents.base import AgentLimits, BudgetExceeded, RunBudget
 from match_context.agents.foundry import FoundryRunner
+from match_context.agents.wire import WireCodec
 from match_context.agents.orchestrator import prepare_tools
 from match_context.analysis.snapshot import build_snapshot
 from match_context.domain.contracts import ContextRequest
@@ -22,17 +23,21 @@ def test_real_sdk_counts_every_model_turn_and_keeps_requests_isolated(scenario_m
         request = ContextRequest(match_id=snapshot.metadata.match_id, from_sequence=0, to_sequence=cutoff)
         tools = prepare_tools(snapshot, request)
         selected = tools.candidates[0].story_id
+        fact = tools.facts[0]
+        fact_index = WireCodec(tools).encode(fact.fact_id)
 
         async def respond(http_request):
             body = json.loads(http_request.content)
             requests.append(body)
             if len(requests) == 1:
-                output = [{"type": "function_call", "id": "fc1", "call_id": "call1", "name": "list_candidates",
-                           "arguments": json.dumps({"cutoff": cutoff}), "status": "completed"}]
+                assert 'candidate_context' in json.dumps(body['input'])
+                assert selected in json.dumps(body['input'])
+            if len(requests) == 1:
+                output = [{"type": "function_call", "id": "fc1", "call_id": "call1", "name": "read_facts",
+                           "arguments": json.dumps({"fact_ids": [fact_index], "cutoff": cutoff}), "status": "completed"}]
             else:
                 output = [{"type": "message", "id": "msg1", "role": "assistant", "status": "completed",
-                           "content": [{"type": "output_text", "text": json.dumps({"selected_story_ids": [selected],
-                                                                                     "cards": [], "decisions": []}),
+                           "content": [{"type": "output_text", "text": json.dumps({"selected_story_ids": [selected]}),
                                         "annotations": []}]}]
             return httpx2.Response(200, json={"id": f"response{len(requests)}", "object": "response",
                                            "created_at": 1, "status": "completed", "model": "offline",
@@ -50,7 +55,12 @@ def test_real_sdk_counts_every_model_turn_and_keeps_requests_isolated(scenario_m
             result = await runner.run("analyst", {"cutoff": cutoff, "sentinel": "first-request"}, tools)
             assert result.selected_story_ids == (selected,)
             assert tools.budget.model_calls == 2
-            assert tools.budget.trace().tool_calls == 1
+            assert tools.budget.trace().tool_calls == 2
+            assert tools.budget.trace().tool_names == ("list_candidates", "read_facts")
+            returned_fact = json.loads(next(item["output"] for item in requests[1]["input"]
+                                           if item.get("type") == "function_call_output"))[0]
+            assert returned_fact["fact_id"] == fact_index
+            assert returned_fact["value"] == fact.value
             assert tools.budget.input_tokens == 20
             assert tools.budget.output_tokens == 4
             fresh = prepare_tools(snapshot, request)
@@ -78,11 +88,11 @@ def test_real_sdk_counts_every_model_turn_and_keeps_requests_isolated(scenario_m
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("bad_text", ["{bad json", '{"selected_story_ids":[],"cards":"invalid","decisions":[]}'])
-def test_sdk_output_parse_failure_is_repaired_and_keeps_all_reported_usage(scenario_main, bad_text):
-    from match_context.agents.base import AgentOutput, ReviewDecision
+@pytest.mark.parametrize("bad_text", [None, "{bad json", '{"selected_story_ids":[],"cards":"invalid","decisions":[]}'])
+def test_sdk_three_role_output_and_parse_repair_keep_all_reported_usage(scenario_main, bad_text):
     from match_context.agents.orchestrator import orchestrate
-    from .agent_helpers import draft_for
+    from .agent_helpers import compact_card, draft_for
+    from match_context.agents.wire import WireCodec
     sent = []
 
     async def run():
@@ -91,9 +101,9 @@ def test_sdk_output_parse_failure_is_repaired_and_keeps_all_reported_usage(scena
         tools = prepare_tools(snapshot, request)
         candidate = tools.candidates[0]
         draft = draft_for(tools.story_payload(candidate))
-        outputs = [AgentOutput(selected_story_ids=(candidate.story_id,)).model_dump_json(), bad_text,
-                   AgentOutput(cards=(draft,)).model_dump_json(),
-                   AgentOutput(decisions=(ReviewDecision(story_id=candidate.story_id, accepted=True),)).model_dump_json()]
+        outputs = [json.dumps({"selected_story_ids": [candidate.story_id]})] + ([bad_text] if bad_text else []) + [
+                   json.dumps({"cards": [compact_card(draft, WireCodec(tools))]}),
+                   json.dumps({"decisions": [{"story_id": candidate.story_id, "accepted": True, "codes": []}]})]
 
         async def respond(http_request):
             text = outputs[len(sent)]
@@ -114,13 +124,19 @@ def test_sdk_output_parse_failure_is_repaired_and_keeps_all_reported_usage(scena
         runner = FoundryRunner(client, http_client=http_client)
         try:
             result = await orchestrate(snapshot, request, runner)
-            assert len(sent) == 4
+            expected_turns = 4 if bad_text else 3
+            assert len(sent) == expected_turns
             assert result.status == "verified"
-            assert result.trace.model_calls == 4
-            assert result.trace.input_tokens == 76
-            assert result.trace.output_tokens == 28
-            assert any(step.decision == "repair_requested" for step in result.trace.steps)
-            assert bad_text not in result.model_dump_json()
+            assert result.trace.model_calls == expected_turns
+            assert result.trace.tool_names == ("list_candidates",)
+            assert result.trace.input_tokens == expected_turns * 19
+            assert result.trace.output_tokens == expected_turns * 7
+            assert any(step.decision == "repair_requested" for step in result.trace.steps) == bool(bad_text)
+            if bad_text:
+                assert bad_text not in result.model_dump_json()
+            required_outputs = ["selected_story_ids"] + (["cards"] if bad_text else []) + ["cards", "decisions"]
+            assert [set(json.loads(req.content)["text"]["format"]["schema"]["properties"])
+                    for req in sent] == [{field} for field in required_outputs]
         finally:
             await runner.close()
     asyncio.run(run())
@@ -161,10 +177,10 @@ def test_model_budget_stops_the_next_network_turn(scenario_main):
 
 
 def test_provider_wire_schema_retains_strict_local_output_limits():
-    from match_context.agents.foundry import FoundryOutput
+    from match_context.agents.wire import SelectionOutput
     from pydantic import ValidationError
     with pytest.raises(ValidationError):
-        FoundryOutput.model_validate({"selected_story_ids": ["a", "b", "c", "d"]})
+        SelectionOutput.model_validate({"selected_story_ids": ["a", "b", "c", "d"]})
 
 
 def test_concurrent_sdk_calls_keep_usage_and_inputs_request_local(scenario_main):
@@ -184,8 +200,7 @@ def test_concurrent_sdk_calls_keep_usage_and_inputs_request_local(scenario_main)
                 "created_at": 1, "status": "completed", "model": "offline",
                 "output": [{"type": "message", "id": "msg-one" if one else "msg-two", "role": "assistant",
                             "status": "completed", "content": [{"type": "output_text", "annotations": [],
-                            "text": json.dumps({"selected_story_ids": [first.candidates[0].story_id],
-                                                "cards": [], "decisions": []})}]}],
+                            "text": json.dumps({"selected_story_ids": [first.candidates[0].story_id]})}]}],
                 "usage": {"input_tokens": 19 if one else 31, "output_tokens": 7 if one else 11,
                           "total_tokens": 26 if one else 42}})
 
@@ -203,4 +218,42 @@ def test_concurrent_sdk_calls_keep_usage_and_inputs_request_local(scenario_main)
             assert len(bodies) == 2
         finally:
             await runner.close()
+    asyncio.run(run())
+
+
+def test_startup_warms_the_same_refreshable_provider_used_for_inference(monkeypatch):
+    import time
+    from azure.core.credentials import AccessToken
+    import azure.identity.aio
+    from match_context.agents.foundry import local_foundry_runner
+
+    class Credential:
+        calls = 0
+        closed = False
+
+        async def get_token(self, *scopes, **kwargs):
+            assert scopes == ("https://ai.azure.com/.default",)
+            self.calls += 1
+            return AccessToken("offline-token", int(time.time()) + 3600)
+
+        async def close(self):
+            self.closed = True
+
+    credential = Credential()
+    monkeypatch.setattr(azure.identity.aio, "AzureCliCredential", lambda **kwargs: credential)
+    monkeypatch.setenv("FOUNDRY_PROJECT_ENDPOINT", "https://offline.services.ai.azure.com/api/projects/test")
+    monkeypatch.setenv("FOUNDRY_MODEL", "offline")
+
+    async def run():
+        async with local_foundry_runner() as runner:
+            assert credential.calls == 1
+            # Exercise the exact SDK authentication callback, without network I/O.
+            assert await runner.client.client._api_key_provider() == "offline-token"
+            assert await runner.client.client._api_key_provider() == "offline-token"
+            assert credential.calls == 1
+            now = time.time()
+            monkeypatch.setattr(time, "time", lambda: now + 3590)
+            assert await runner.client.client._api_key_provider() == "offline-token"
+            assert credential.calls == 2
+        assert credential.closed
     asyncio.run(run())
