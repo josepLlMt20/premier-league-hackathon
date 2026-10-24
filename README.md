@@ -111,7 +111,7 @@ After Azure sign-in and configuring the existing `.env` endpoint and deployment,
 
 The output distinguishes `mode=foundry` from `mode=factual`, and `status=verified` from fallback or insufficient observations. It includes the request cutoff, accepted cards, resolved text, rejection codes and a concise usage trace. `--include-facts` includes the complete canonical fact registry. A failed local connection returns `foundry_startup_failed`; an in-request provider failure returns identified factual output.
 
-Requests are limited to seven model turns, eight tool executions (including candidate prefetch), 1200 output tokens per model turn and a ten-second request deadline. The application retrieves candidates before the analyst's model call; the analyst, writer and reviewer still run separately. Compact internal references are restored to canonical evidence before validation. Ordinary tests never call a model. The live test is a separate opt-in that consumes existing Azure quota:
+Requests are limited to seven model turns, eight tool executions (including candidate prefetch), 1200 output tokens per model turn and a 25-second request deadline. `CONTEXT_TIMEOUT_SECONDS` may lower that deadline; values above 25 are rejected. The web context timeout remains 30 seconds, and storage reads retain their 10-second cap. The application retrieves candidates before the analyst's model call; the analyst, writer and reviewer still run separately. Compact internal references are restored to canonical evidence before validation. [Deadline fix and real professional measurements](docs/foundry-deadline-validation.md). Ordinary tests never call a model. The live test is a separate opt-in that consumes existing Azure quota:
 
 ```powershell
 $env:RUN_FOUNDRY_LIVE = '1'

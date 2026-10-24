@@ -235,6 +235,7 @@ def test_concurrent_sdk_calls_keep_usage_and_inputs_request_local(scenario_main)
 
 def test_startup_warms_the_same_refreshable_provider_used_for_inference(monkeypatch):
     import time
+    import agent_framework.foundry as foundry_sdk
     from azure.core.credentials import AccessToken
     import azure.identity.aio
     from match_context.agents.foundry import local_foundry_runner
@@ -252,6 +253,12 @@ def test_startup_warms_the_same_refreshable_provider_used_for_inference(monkeypa
             self.closed = True
 
     credential = Credential()
+    constructors = []
+    actual_client = foundry_sdk.FoundryChatClient
+    def create_client(**kwargs):
+        constructors.append(kwargs)
+        return actual_client(**kwargs)
+    monkeypatch.setattr(foundry_sdk, "FoundryChatClient", create_client)
     monkeypatch.setattr(azure.identity.aio, "AzureCliCredential", lambda **kwargs: credential)
     monkeypatch.setenv("FOUNDRY_PROJECT_ENDPOINT", "https://offline.services.ai.azure.com/api/projects/test")
     monkeypatch.setenv("FOUNDRY_MODEL", "offline")
@@ -261,6 +268,9 @@ def test_startup_warms_the_same_refreshable_provider_used_for_inference(monkeypa
                                         model="explicit-deployment") as runner:
             assert "override.services.ai.azure.com" in str(runner.client.client.base_url)
             assert credential.calls == 1
+            assert runner.client.client.timeout == 25
+            assert runner._http_client.timeout.read == 25
+            assert constructors[0]["function_invocation_configuration"]["max_duration_seconds"] == 25
             # Exercise the exact SDK authentication callback, without network I/O.
             assert await runner.client.client._api_key_provider() == "offline-token"
             assert await runner.client.client._api_key_provider() == "offline-token"

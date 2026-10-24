@@ -12,6 +12,9 @@ SHOT_INDEX_LABEL = re.compile(r"(?:calidad|índice|puntuación).*?(?:sintétic|h
 POINT_UNIT = re.compile(r"\b(?:puntos|points)\b", re.I)
 THIRD_PASS_LABEL = re.compile(r"(?:pases?|passes|passing).*?(?:último tercio|tercio ofensivo|attacking[-\s]+third)|attacking[-\s]+third.*?pass", re.I)
 PERCENT_UNIT = re.compile(r"%|\b(?:por ciento|percent)\b", re.I)
+FACT_AS_COORDINATE = re.compile(r"\b[xy]\s*(?:[<>]=?|[=≥≤≈:])\s*\{\{fact:", re.I)
+FACT_AS_THRESHOLD = re.compile(r"(?:[<>]=?|[≥≤])\s*\{\{fact:")
+METRE_UNIT = re.compile(r"\s*(?:m|metres?|meters?|metros?)\b", re.I)
 
 
 def check_claim(claim: Claim, tools) -> tuple[str, ...]:
@@ -31,6 +34,17 @@ def check_claim(claim: Claim, tools) -> tuple[str, ...]:
             codes.add("free_number")
         text = unicodedata.normalize("NFKC", text)
         markers = MARKER.findall(text)
+        # The narrative fact registry contains aggregate match metrics, not
+        # pitch coordinates or definition thresholds. A real count reference
+        # must not be repurposed as a spatial threshold (e.g. a count of 1
+        # rendered as x >= 1 instead of the canonical 70 m definition).
+        if FACT_AS_COORDINATE.search(text) or FACT_AS_THRESHOLD.search(text):
+            codes.add("unsupported_meaning")
+        for marker in MARKER.finditer(text):
+            kind, identifier = marker.groups()
+            fact = tools.fact_map.get(identifier) if kind == "fact" else None
+            if fact and fact.unit != "m" and METRE_UNIT.match(text[marker.end():]):
+                codes.add("unsupported_meaning")
         for kind, identifier in markers:
             if kind == "fact" and (identifier not in tools.fact_map or identifier not in claim.fact_ids):
                 codes.add("unknown_fact")

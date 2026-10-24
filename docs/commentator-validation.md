@@ -1,5 +1,7 @@
 # Professional commentator workflow — 24 October 2026
 
+The later [Foundry deadline correction](foundry-deadline-validation.md) raises the application generation cap to 25 seconds and records real accepted Spanish/English samples. The earlier 10-second failures below remain historical evidence. Automatic acceptance is not human editorial approval; some generated phrasing still needs work.
+
 Touchline now has fan and professional audiences on one match workspace. Choose a received minute, select **Profesional**, choose the interval/preferences and request **Preparar briefing**. Changing audience preserves the committed minute and scoreboard, pauses playback and invalidates incompatible context. The latest received minute is an explicit action; reloading starts in fan mode and only persists preferences.
 
 A verified result supplies up to three cards: headline, what changed, suggested commentary, observation/interpretation labels, cited figures, comparison intervals and limitations. **Ver evidencia** reuses the bounded snapshot drawer. **Copiar frase** includes every card limitation. Clipboard failures keep the text selectable and give a recovery message.

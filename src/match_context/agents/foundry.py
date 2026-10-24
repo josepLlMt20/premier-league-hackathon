@@ -13,6 +13,7 @@ import httpx2
 from pydantic import ValidationError
 
 from match_context.domain.contracts import TraceStep
+from .base import MAX_CONTEXT_SECONDS
 from .wire import ROLE_OUTPUTS, WireCodec
 
 TOOL_NAMES = {"list_candidates", "read_facts", "inspect_events"}
@@ -64,6 +65,9 @@ Every numeric shot_quality_total citation must explicitly name the synthetic/heu
 and its points unit (es: "índice sintético de tiro", "puntos"; en: "synthetic shot-quality index", "points").
 Every numeric territorial_share citation must name completed attacking-third passes and include % or percent.
 Bare comparisons such as "team: value, previously value" are not publishable.
+The registry has aggregate measurements, not coordinate/definition thresholds. Never put fact values into
+spatial formulas, inequality thresholds or metre coordinates. Explain high recoveries as recoveries in the
+attacking third, without a numeric definition. Do not quote numerical thresholds from method descriptions.
 """
 
 INSTRUCTIONS = {
@@ -74,6 +78,8 @@ Select only returned story IDs, most useful first; choose one for a simple fan a
 or commentators. Prefer meaningful distinct changes, respecting the favorite team without changing facts.
 Return selected_story_ids. Do not draft cards or review decisions.""",
     "writer": COMMON + """Write exactly one concise card for each supplied story. Match request.language (es/en).
+For es, every narrative field must be Spanish: use puntos, tiros and recuperaciones altas. Never append
+English translations or copy the English unit/method prose. For en, use English throughout.
 Always use entity markers, even
 instead of shortened team names.
 Use the supplied short fact aliases as support. Each card needs four claims: headline, explanation, line, overlay.
@@ -108,6 +114,10 @@ bare unlabelled numbers, synthetic quality values
 without an explicit synthetic-index label and points unit, and territorial values without attacking-third
 passing context and a percent unit. Reject a claim of increased shot volume unless shot-count facts support it.
 Use wrong_audience for redundant/unusable prose, unsupported_meaning for misrepresented measures.
+An observed claim MUST have empty limits: never reject it solely for missing limitations, since code adds
+the synthetic-data and metric caveats. Only interpretations require nonempty limitation codes.
+Reject metric values substituted into coordinate definitions or thresholds, even if their references exist.
+For es reject English narrative phrases or units; English machine enum values are not narrative text.
 Source limitations are displayed
 automatically, so an observed numeric headline need not repeat them. Return decisions, exactly one per supplied
 story_id. For rejection use allowed codes; for acceptance codes must be empty. No prose or private reasoning.""",
@@ -120,11 +130,11 @@ class FoundryRunner:
     def __init__(self, client, *, http_client=None, token_provider=None):
         self.client = client
         self._original_client = client.client
-        self._http_client = http_client or httpx2.AsyncClient(timeout=10)
+        self._http_client = http_client or httpx2.AsyncClient(timeout=MAX_CONTEXT_SECONDS)
         if capture_usage not in self._http_client.event_hooks["response"]:
             self._http_client.event_hooks["response"].append(capture_usage)
         auth = {"api_key": token_provider} if token_provider is not None else {}
-        self.client.client = self._original_client.with_options(max_retries=0, timeout=10,
+        self.client.client = self._original_client.with_options(max_retries=0, timeout=MAX_CONTEXT_SECONDS,
                                                                http_client=self._http_client, **auth)
 
     async def run(self, role, payload, tools):
@@ -218,7 +228,7 @@ async def local_foundry_runner(*, project_endpoint=None, model=None):
         await token_provider()
         client = FoundryChatClient(project_endpoint=endpoint, model=model, credential=credential,
                                    function_invocation_configuration={"max_iterations": 7, "max_function_calls": 8,
-                                                                      "max_duration_seconds": 10})
+                                                                      "max_duration_seconds": MAX_CONTEXT_SECONDS})
         runner = FoundryRunner(client, token_provider=token_provider)
         yield runner
     finally:

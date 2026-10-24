@@ -50,3 +50,31 @@ it('times out a stalled read so the UI can offer recovery', async () => {
     await request;
   }
 });
+
+it('allows a real context response at 25 seconds within the 30 second browser deadline', async () => {
+  vi.useFakeTimers();
+  let captured!: AbortSignal;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((_, options) => {
+      captured = options.signal;
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => resolve(new Response(JSON.stringify(context))), 25000);
+        captured.addEventListener(
+          'abort',
+          () => {
+            clearTimeout(timer);
+            reject(captured.reason);
+          },
+          { once: true },
+        );
+      });
+    }),
+  );
+  const request = requestContext(context.request, new AbortController().signal);
+  await vi.advanceTimersByTimeAsync(24999);
+  expect(captured.aborted).toBe(false);
+  await vi.advanceTimersByTimeAsync(1);
+  await expect(request).resolves.toEqual(context);
+  expect(vi.getTimerCount()).toBe(0);
+});
