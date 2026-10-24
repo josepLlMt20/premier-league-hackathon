@@ -1,0 +1,556 @@
+{
+  "date": "2026-10-24",
+  "model_deployment": "gpt-5-mini",
+  "scenario": "main",
+  "seed": 7,
+  "deadline_seconds": 10,
+  "notes": [
+    "Post-review measurements with explicit high-recovery qualifier validation and bounded malformed-review repair.",
+    "Includes all five post-review requests: two verified bilingual outputs and three identified factual fallbacks. No reliability or tail-latency guarantee.",
+    "Initial pre-review outputs, including the ambiguous recovery-label finding, are preserved separately in the before-review report.",
+    "Request timing excludes startup; usage from cancelled/incomplete responses can be absent."
+  ],
+  "results": [
+    {
+      "verification": "post-review bilingual smoke",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "fan",
+        "depth": "simple",
+        "language": "es",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "summary": "Ámbar FC pasó de 1 a 4 recuperaciones altas; atención a si mantienen esa intensidad.",
+      "summary_claims": [
+        {
+          "claim_id": "s-cac00907f3f9b0a5cd22bccb-suggested_line",
+          "kind": "interpretation",
+          "text": "{{entity:amber}} pasó de {{fact:f-2f8eebbe68b9292775ef0acf}} a {{fact:f-a1bc53c3c660c8dafc8f457e}} recuperaciones altas; atención a si mantienen esa intensidad.",
+          "fact_ids": [
+            "f-2f8eebbe68b9292775ef0acf",
+            "f-a1bc53c3c660c8dafc8f457e"
+          ],
+          "event_ids": [],
+          "limitations": [
+            "Asociación observada en datos sintéticos.",
+            "Conclusión limitada a la muestra de eventos disponible."
+          ]
+        }
+      ],
+      "cards": [
+        {
+          "story_id": "s-cac00907f3f9b0a5cd22bccb",
+          "headline": "Ámbar FC tiene recuperaciones altas recientes",
+          "explanation": "En la ventana reciente 4 recuperaciones altas frente a 1 en la ventana anterior.",
+          "suggested_line": "Ámbar FC pasó de 1 a 4 recuperaciones altas; atención a si mantienen esa intensidad.",
+          "overlay_text": "Más recuperaciones altas para Ámbar FC (1 → 4).",
+          "claims": [
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-headline",
+              "kind": "observed",
+              "text": "{{entity:amber}} tiene recuperaciones altas recientes",
+              "fact_ids": [
+                "f-a1bc53c3c660c8dafc8f457e"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-explanation",
+              "kind": "interpretation",
+              "text": "En la ventana reciente {{fact:f-a1bc53c3c660c8dafc8f457e}} recuperaciones altas frente a {{fact:f-2f8eebbe68b9292775ef0acf}} en la ventana anterior.",
+              "fact_ids": [
+                "f-a1bc53c3c660c8dafc8f457e",
+                "f-2f8eebbe68b9292775ef0acf"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Asociación observada en datos sintéticos."
+              ]
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-suggested_line",
+              "kind": "interpretation",
+              "text": "{{entity:amber}} pasó de {{fact:f-2f8eebbe68b9292775ef0acf}} a {{fact:f-a1bc53c3c660c8dafc8f457e}} recuperaciones altas; atención a si mantienen esa intensidad.",
+              "fact_ids": [
+                "f-2f8eebbe68b9292775ef0acf",
+                "f-a1bc53c3c660c8dafc8f457e"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Asociación observada en datos sintéticos.",
+                "Conclusión limitada a la muestra de eventos disponible."
+              ]
+            },
+            {
+              "claim_id": "s-cac00907f3f9b0a5cd22bccb-overlay",
+              "kind": "observed",
+              "text": "Más recuperaciones altas para {{entity:amber}} ({{fact:f-2f8eebbe68b9292775ef0acf}} → {{fact:f-a1bc53c3c660c8dafc8f457e}}).",
+              "fact_ids": [
+                "f-2f8eebbe68b9292775ef0acf",
+                "f-a1bc53c3c660c8dafc8f457e"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Datos sintéticos; el cambio observado no demuestra una causa táctica.",
+            "Asociación observada en datos sintéticos.",
+            "Conclusión limitada a la muestra de eventos disponible."
+          ]
+        }
+      ],
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 7312,
+        "output_tokens": 341,
+        "elapsed_seconds": 7.0315
+      }
+    },
+    {
+      "verification": "post-review bilingual smoke",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 266,
+        "role": "fan",
+        "depth": "simple",
+        "language": "en",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:266:b6eb177cd3a32bf7",
+      "status": "verified",
+      "mode": "foundry",
+      "summary": "Ámbar FC increased high recoveries from 1 to 4 in the later interval.",
+      "summary_claims": [
+        {
+          "claim_id": "s-fde9d1ac66aa048e57161de9-suggested_line",
+          "kind": "interpretation",
+          "text": "{{entity:amber}} increased high recoveries from {{fact:f-fee6cc203213e1a135c2e809}} to {{fact:f-675383f4f27605bbf129bd65}} in the later interval.",
+          "fact_ids": [
+            "f-fee6cc203213e1a135c2e809",
+            "f-675383f4f27605bbf129bd65"
+          ],
+          "event_ids": [],
+          "limitations": [
+            "Observed association in synthetic data.",
+            "Conclusion limited to the available event sample."
+          ]
+        }
+      ],
+      "cards": [
+        {
+          "story_id": "s-fde9d1ac66aa048e57161de9",
+          "headline": "Ámbar FC shows more high recoveries in the recent window",
+          "explanation": "Ámbar FC had 4 high recoveries recently compared with 1 earlier.",
+          "suggested_line": "Ámbar FC increased high recoveries from 1 to 4 in the later interval.",
+          "overlay_text": "Ámbar FC: 1 → 4 high recoveries (recent increase).",
+          "claims": [
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-headline",
+              "kind": "observed",
+              "text": "{{entity:amber}} shows more high recoveries in the recent window",
+              "fact_ids": [
+                "f-675383f4f27605bbf129bd65"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-explanation",
+              "kind": "observed",
+              "text": "{{entity:amber}} had {{fact:f-675383f4f27605bbf129bd65}} high recoveries recently compared with {{fact:f-fee6cc203213e1a135c2e809}} earlier.",
+              "fact_ids": [
+                "f-675383f4f27605bbf129bd65",
+                "f-fee6cc203213e1a135c2e809"
+              ],
+              "event_ids": [],
+              "limitations": []
+            },
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-suggested_line",
+              "kind": "interpretation",
+              "text": "{{entity:amber}} increased high recoveries from {{fact:f-fee6cc203213e1a135c2e809}} to {{fact:f-675383f4f27605bbf129bd65}} in the later interval.",
+              "fact_ids": [
+                "f-fee6cc203213e1a135c2e809",
+                "f-675383f4f27605bbf129bd65"
+              ],
+              "event_ids": [],
+              "limitations": [
+                "Observed association in synthetic data.",
+                "Conclusion limited to the available event sample."
+              ]
+            },
+            {
+              "claim_id": "s-fde9d1ac66aa048e57161de9-overlay",
+              "kind": "observed",
+              "text": "{{entity:amber}}: {{fact:f-fee6cc203213e1a135c2e809}} → {{fact:f-675383f4f27605bbf129bd65}} high recoveries (recent increase).",
+              "fact_ids": [
+                "f-fee6cc203213e1a135c2e809",
+                "f-675383f4f27605bbf129bd65"
+              ],
+              "event_ids": [],
+              "limitations": []
+            }
+          ],
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 266,
+            "start_second": 1188,
+            "end_second": 1488
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 266,
+            "start_second": 888,
+            "end_second": 1188
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation.",
+            "Observed association in synthetic data.",
+            "Conclusion limited to the available event sample."
+          ]
+        }
+      ],
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 6422,
+        "output_tokens": 314,
+        "elapsed_seconds": 6.7935
+      }
+    },
+    {
+      "verification": "post-review additional profile",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "detailed",
+        "language": "es",
+        "favorite_team_id": "amber"
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "factual",
+      "mode": "factual",
+      "summary": "Resumen factual. Ámbar FC: 6 tiros en el tramo. Cobalto United: 0 tiros en el tramo.",
+      "summary_claims": [
+        {
+          "claim_id": "fallback-0",
+          "kind": "observed",
+          "text": "{{entity:amber}}: {{fact:f-0faf3caa6ee7d7db8c51950e}} tiros en el tramo.",
+          "fact_ids": [
+            "f-0faf3caa6ee7d7db8c51950e"
+          ],
+          "event_ids": [],
+          "limitations": []
+        },
+        {
+          "claim_id": "fallback-1",
+          "kind": "observed",
+          "text": "{{entity:cobalt}}: {{fact:f-bb261f7f9d52969c89fa8c7b}} tiros en el tramo.",
+          "fact_ids": [
+            "f-bb261f7f9d52969c89fa8c7b"
+          ],
+          "event_ids": [],
+          "limitations": []
+        }
+      ],
+      "cards": [],
+      "rejection_codes": [
+        "deadline",
+        "missing_metric_qualifier",
+        "raw_entity"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "system",
+            "decision": "factual_fallback"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 6229,
+        "output_tokens": 792,
+        "elapsed_seconds": 10.0095
+      }
+    },
+    {
+      "verification": "post-review additional profile",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "fan",
+        "depth": "detailed",
+        "language": "en",
+        "favorite_team_id": "amber"
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "factual",
+      "mode": "factual",
+      "summary": "Factual summary. Ámbar FC: 6 shots in this interval. Cobalto United: 0 shots in this interval.",
+      "summary_claims": [
+        {
+          "claim_id": "fallback-0",
+          "kind": "observed",
+          "text": "{{entity:amber}}: {{fact:f-0faf3caa6ee7d7db8c51950e}} shots in this interval.",
+          "fact_ids": [
+            "f-0faf3caa6ee7d7db8c51950e"
+          ],
+          "event_ids": [],
+          "limitations": []
+        },
+        {
+          "claim_id": "fallback-1",
+          "kind": "observed",
+          "text": "{{entity:cobalt}}: {{fact:f-bb261f7f9d52969c89fa8c7b}} shots in this interval.",
+          "fact_ids": [
+            "f-bb261f7f9d52969c89fa8c7b"
+          ],
+          "event_ids": [],
+          "limitations": []
+        }
+      ],
+      "cards": [],
+      "rejection_codes": [
+        "causal_language",
+        "deadline",
+        "missing_limitation"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "system",
+            "decision": "factual_fallback"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 4,
+        "tool_calls": 1,
+        "input_tokens": 9390,
+        "output_tokens": 639,
+        "elapsed_seconds": 10.0103
+      }
+    },
+    {
+      "verification": "first post-review attempt: assertion failed after factual fallback; English not reached",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "fan",
+        "depth": "simple",
+        "language": "es",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "factual",
+      "mode": "factual",
+      "summary": "Resumen factual. Ámbar FC: 6 tiros en el tramo. Cobalto United: 0 tiros en el tramo.",
+      "summary_claims": [
+        {
+          "claim_id": "fallback-0",
+          "kind": "observed",
+          "text": "{{entity:amber}}: {{fact:f-0faf3caa6ee7d7db8c51950e}} tiros en el tramo.",
+          "fact_ids": [
+            "f-0faf3caa6ee7d7db8c51950e"
+          ],
+          "event_ids": [],
+          "limitations": []
+        },
+        {
+          "claim_id": "fallback-1",
+          "kind": "observed",
+          "text": "{{entity:cobalt}}: {{fact:f-bb261f7f9d52969c89fa8c7b}} tiros en el tramo.",
+          "fact_ids": [
+            "f-bb261f7f9d52969c89fa8c7b"
+          ],
+          "event_ids": [],
+          "limitations": []
+        }
+      ],
+      "cards": [],
+      "rejection_codes": [
+        "causal_language",
+        "deadline",
+        "missing_limitation"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "system",
+            "decision": "factual_fallback"
+          }
+        ],
+        "tool_names": [
+          "list_candidates",
+          "read_facts"
+        ],
+        "model_calls": 5,
+        "tool_calls": 2,
+        "input_tokens": 9173,
+        "output_tokens": 373,
+        "elapsed_seconds": 10.0138
+      }
+    }
+  ]
+}

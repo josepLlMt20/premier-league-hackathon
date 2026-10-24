@@ -92,3 +92,54 @@ class StoryCandidate(FrozenModel):
     fact_ids: tuple[str, ...]
     event_ids: tuple[str, ...]
     limitations: tuple[str, ...]
+
+
+class Claim(FrozenModel):
+    claim_id: Identifier
+    kind: Literal["observed", "interpretation"]
+    text: str = Field(min_length=1, max_length=600)
+    fact_ids: tuple[str, ...] = Field(default=(), max_length=12)
+    event_ids: tuple[str, ...] = Field(default=(), max_length=10)
+    limitations: tuple[str, ...] = Field(default=(), max_length=3)
+
+
+class ContextCard(FrozenModel):
+    story_id: str
+    headline: str
+    explanation: str
+    suggested_line: str
+    overlay_text: str = Field(max_length=140)
+    claims: tuple[Claim, ...]
+    current_interval: FactInterval
+    comparison_interval: FactInterval
+    limitations: tuple[str, ...]
+
+
+class TraceStep(FrozenModel):
+    role: Literal["analyst", "writer", "reviewer", "system"]
+    decision: str
+
+
+class AgentTrace(FrozenModel):
+    steps: tuple[TraceStep, ...] = ()
+    tool_names: tuple[str, ...] = ()
+    model_calls: int = Field(default=0, ge=0)
+    tool_calls: int = Field(default=0, ge=0)
+    input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(default=0, ge=0)
+    elapsed_seconds: float = Field(default=0, ge=0)
+
+
+class ContextResult(FrozenModel):
+    request: ContextRequest
+    snapshot_id: str
+    status: Literal["verified", "factual", "insufficient"]
+    mode: Literal["foundry", "scripted", "factual"]
+    summary: str
+    summary_claims: tuple[Claim, ...] = ()
+    cards: tuple[ContextCard, ...] = Field(default=(), max_length=3)
+    facts: tuple[MetricFact, ...]
+    evidence_ids: tuple[str, ...] = ()
+    rejection_codes: tuple[str, ...] = ()
+    trace_id: str
+    trace: AgentTrace = Field(default_factory=AgentTrace)
