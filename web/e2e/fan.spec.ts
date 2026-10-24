@@ -3,6 +3,44 @@ import AxeBuilder from '@axe-core/playwright';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import type { ContextResult, MatchView } from '../src/api/client';
 const output = '../tmp/ui-validation';
+test('studio evidence drawer is finite, reduced-motion safe and cannot retain context during a rewind', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  await expect(page.getByTestId('match-view')).toBeVisible();
+  await seek(page, 1500);
+  await page.getByRole('button', { name: 'Ponerme al día' }).click();
+  await expect(page.locator('.shot-comparison')).toBeVisible();
+  const meters = page.getByRole('meter');
+  await expect(meters).toHaveCount(2);
+  const trigger = page.getByRole('button', { name: 'Ver evidencia', exact: true });
+  await trigger.click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer).toBeVisible();
+  await expect
+    .poll(async () =>
+      Math.round((await drawer.boundingBox())!.x + (await drawer.boundingBox())!.width),
+    )
+    .toBe(page.viewportSize()!.width);
+  expect(await drawer.evaluate((node) => getComputedStyle(node).transitionDuration)).toContain(
+    '0.24s',
+  );
+  expect((await drawer.boundingBox())!.y).toBe(0);
+  await page.keyboard.press('Escape');
+  await expect(drawer).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await trigger.click();
+  await expect(drawer).toBeVisible();
+  expect(await drawer.evaluate((node) => getComputedStyle(node).transitionDuration)).toBe('0s');
+  await page.keyboard.press('Escape');
+  await expect(drawer).toHaveCount(0);
+  await seek(page, 0);
+  await expect(page.locator('.shot-comparison')).toHaveCount(0);
+  await expect(page.locator('.pitch-callout')).toHaveCount(0);
+  await expect(drawer).toHaveCount(0);
+});
 test('event motion is finite, respects reduced motion and removes the previous event immediately on rewind', async ({
   page,
 }) => {
@@ -237,10 +275,10 @@ test('accessible responsive rendering, fonts, measured spacing and real DOM', as
   await page.evaluate(() => document.fonts.ready);
   const fonts = await page.evaluate(() => ({
     family: getComputedStyle(document.body).fontFamily,
-    loaded: document.fonts.check('16px "Inter"'),
+    loaded: document.fonts.check('16px "IBM Plex Sans"'),
   }));
   expect(fonts.loaded).toBe(true);
-  expect(fonts.family).toContain('Inter');
+  expect(fonts.family).toContain('IBM Plex Sans');
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   const a11y = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])

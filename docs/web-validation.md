@@ -1,5 +1,17 @@
 # Fan viewer: task 6
 
+## Current studio refinement (24 October)
+
+The user-approved Estudio de partido design supersedes the earlier Heyclicky appearance described in historical notes below. The visible provisional English identity is **Touchline**, with a local generated abstract sequence mark and self-hosted IBM Plex Sans. Backend names, identifiers and storage keys remain stable.
+
+The studio adds a compact match strip, anchored event annotation, native playback ruler, chronological latest-three shortcuts, result-bound shot comparison and responsive evidence drawer. Shot facts must match the context snapshot, cutoff and full requested sequence interval; missing, invalid or mismatched facts omit the chart. No totals are borrowed from the broader view.
+
+Fresh verification after the final annotation correction: **40 unit tests passed**, **12 real HTTP/SQLite browser tests passed in one minute** across desktop/mobile, build passed, API type drift and formatting passed. Tests include normal/reduced motion, focus return, finite240ms drawer transition, immediate stale-data removal, correction availability, slow bounded reads, fonts, axe page/dialog scans and320px reflow. The unchanged backend suite retains its previous255-test result; it was not rerun for this frontend change.
+
+Actual factual-mode captures are in [studio-2026-10-24](evidence/studio-2026-10-24/01-escritorio.png), with mobile, evidence and preferences alongside them. Both captures use snapshot `m-c7261c37c40ffd45:269:0a88c78b70eb0690`, paused25:00, score1–0 and zero model calls. Console/page errors were empty. The known ingestion head is90:00; that is received metadata, not a future match score. See [design QA](../design-qa.md) for explicit visual adaptations, including the real105×68 field geometry and readable mobile caption.
+
+No Azure provisioning, external deployment or real-model quality claim is part of this refinement.
+
 The React/Vite/TypeScript fan experience consumes the existing temporal API. It shows the score known at the selected minute, one recorded event on an SVG pitch, recent events, a missed-segment recap and optional supporting evidence. Spanish/English, simple/detailed output and favorite-team preferences feed the same backend context request.
 
 The local product is runnable; deployment, professional briefings and evaluation with real users remain separate work. The current frontend tests use factual or explicitly scripted output. They do not establish new Foundry narrative quality, latency or cloud readiness.

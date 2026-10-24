@@ -5,7 +5,7 @@ import { Status } from './components/Status';
 import { NativeSelect } from './components/ui/native-select';
 import { copy } from './domain/copy';
 import { readPreferences } from './domain/playback';
-import { FootballLineIcon } from './components/icons';
+import { brand } from './brand';
 export function App() {
   const [matches, setMatches] = useState<readonly MatchMetadata[] | null>(null),
     [selected, setSelected] = useState('');
@@ -40,14 +40,13 @@ export function App() {
       </a>
       <header className="app-header">
         <span className="wordmark">
-          <span className="brand-mark" aria-hidden="true">
-            <FootballLineIcon />
-          </span>
-          <span className="wordmark-text">
-            Match<span>Context</span>
-          </span>
+          <img className="brand-mark" src={brand.mark} width="44" height="44" alt="" />
+          <span className="wordmark-text">{brand.name}</span>
         </span>
-        <span className="header-label">Inside the Game · Hackathon</span>
+        <div className="header-meta">
+          <span className="synthetic-label">{t.synthetic}</span>
+          <span className="header-label">Inside the Game · Hackathon</span>
+        </div>
       </header>
       <main id="match">
         {error ? (

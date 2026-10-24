@@ -22,44 +22,53 @@ export function PlaybackControls({
           {clock(state.second)}
         </output>
       </label>
-      <input
-        ref={sliderRef}
-        id="match-time"
-        className="time-range"
-        type="range"
-        aria-label={t.time}
-        min="0"
-        max={headSecond}
-        step="1"
-        value={state.second}
-        aria-valuetext={clock(state.second)}
-        onChange={(event) => dispatch({ type: 'seek', second: Number(event.target.value) })}
-      />
-      <div className="playback-row">
-        <Button
-          className="play-button"
-          variant="secondary"
-          aria-label={t.rewind}
-          title={t.rewind}
-          disabled={state.second === 0}
-          onClick={() => dispatch({ type: 'seek', second: Math.max(0, state.second - 30) })}
-        >
-          <FastRewindLineIcon aria-hidden="true" />
-        </Button>
-        <Button
-          variant="secondary"
-          disabled={!headSecond}
-          onClick={() => dispatch({ type: 'playing', playing: !state.playing })}
-        >
-          {state.playing ? (
-            <PauseLineIcon aria-hidden="true" />
-          ) : (
-            <PlayLineIcon aria-hidden="true" />
-          )}
-          {state.playing ? t.pause : t.play}
-        </Button>
+      <div className="transport-main">
+        <div className="transport-buttons">
+          <Button
+            className="play-button"
+            variant="outline"
+            aria-label={t.rewind}
+            title={t.rewind}
+            disabled={state.second === 0}
+            onClick={() => dispatch({ type: 'seek', second: Math.max(0, state.second - 30) })}
+          >
+            <FastRewindLineIcon aria-hidden="true" />
+          </Button>
+          <Button
+            className="play-button transport-play"
+            aria-label={state.playing ? t.pause : t.play}
+            title={state.playing ? t.pause : t.play}
+            disabled={!headSecond}
+            onClick={() => dispatch({ type: 'playing', playing: !state.playing })}
+          >
+            {state.playing ? (
+              <PauseLineIcon aria-hidden="true" />
+            ) : (
+              <PlayLineIcon aria-hidden="true" />
+            )}
+          </Button>
+        </div>
+        <div className="time-ruler">
+          <input
+            ref={sliderRef}
+            id="match-time"
+            className="time-range"
+            type="range"
+            aria-label={t.time}
+            min="0"
+            max={headSecond}
+            step="1"
+            value={state.second}
+            aria-valuetext={clock(state.second)}
+            onChange={(event) => dispatch({ type: 'seek', second: Number(event.target.value) })}
+          />
+          <div className="ruler-labels mono" aria-hidden="true">
+            <span>00:00</span>
+            <span>{clock(headSecond)}</span>
+          </div>
+        </div>
         <label className="speed-label" htmlFor="speed">
-          {t.speed}
+          <span className="sr-only">{t.speed}</span>
           <select
             aria-label={t.speed}
             id="speed"

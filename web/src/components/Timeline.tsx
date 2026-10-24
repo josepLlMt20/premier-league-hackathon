@@ -16,15 +16,20 @@ export function Timeline({
   return (
     <div className="match-timeline">
       {!!view.recent_events.length && (
-        <div className="moment-rail" role="group" aria-label={t.moments}>
-          {view.recent_events
-            .slice(-3)
-            .reverse()
-            .map((event) => (
+        <>
+          <div className="sequence-heading">
+            <h2>{language === 'es' ? 'Secuencia reciente' : 'Recent sequence'}</h2>
+            <span className="caption">
+              {language === 'es' ? 'Por orden de recepción' : 'In received order'}
+            </span>
+          </div>
+          <div className="moment-rail" role="group" aria-label={t.moments}>
+            {view.recent_events.slice(-3).map((event, index, events) => (
               <Button
                 key={event.event_id}
                 variant="outline"
                 className="moment-button"
+                aria-current={index === events.length - 1 ? 'step' : undefined}
                 aria-label={`${t.seekEvent} ${eventName(event.kind, language)} · ${clock(event.available_second)}`}
                 onClick={() => onSeek(event.available_second)}
               >
@@ -35,7 +40,8 @@ export function Timeline({
                 </span>
               </Button>
             ))}
-        </div>
+          </div>
+        </>
       )}
       <details className="recent">
         <summary>

@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { NativeSelect } from '../../components/ui/native-select';
 import { Status } from '../../components/Status';
+import { ShotComparison } from './ShotComparison';
 import { ArrowRightLineIcon, SettingsLineIcon, TargetLineIcon } from '../../components/icons';
 export function CatchUpPanel({
   state,
@@ -42,33 +43,37 @@ export function CatchUpPanel({
       <section aria-labelledby="catchup-heading">
         <div className="window-bar">
           <span className="recap-heading">
-            <TargetLineIcon aria-hidden="true" />
-            {t.recapTitle}
+            {prefs.language === 'es' ? 'Contexto del tramo' : 'Interval context'}
           </span>
-          <span className="window-dot" aria-hidden="true" />
         </div>
         <div className="catchup-body">
           <h2 id="catchup-heading">{t.catchup}</h2>
           <p className="muted">{t.catchupHint}</p>
           <div className="recap-range">
-            <label className="range-label" htmlFor="from-time">
-              <span>{t.from}</span>
-              <output className="mono">{clock(state.fromSecond)}</output>
-            </label>
-            <input
-              id="from-time"
-              type="range"
-              className="time-range"
-              min="0"
-              max={state.second}
-              step="1"
-              value={state.fromSecond}
-              aria-valuetext={clock(state.fromSecond)}
-              onChange={(event) => dispatch({ type: 'from', second: Number(event.target.value) })}
-            />
-            <p className="caption">
-              {t.to} <strong className="mono">{clock(state.second)}</strong>
-            </p>
+            <div className="recap-range-labels">
+              <label htmlFor="from-time">{t.from}</label>
+              <span>{t.to}</span>
+            </div>
+            <div className="interval-control">
+              <output className="mono" htmlFor="from-time">
+                {clock(state.fromSecond)}
+              </output>
+              <input
+                id="from-time"
+                aria-label={t.from}
+                type="range"
+                className="time-range"
+                min="0"
+                max={state.second}
+                step="1"
+                value={state.fromSecond}
+                aria-valuetext={clock(state.fromSecond)}
+                onChange={(event) => dispatch({ type: 'from', second: Number(event.target.value) })}
+              />
+              <span className="interval-end mono" aria-label={`${t.to} ${clock(state.second)}`}>
+                {clock(state.second)}
+              </span>
+            </div>
           </div>
           <details className="preferences">
             <summary>
@@ -170,6 +175,7 @@ export function CatchUpPanel({
                       ? t.insufficient
                       : t.factual}
               </Badge>
+              <ShotComparison result={result} metadata={metadata} language={prefs.language} />
               <p className="recap-summary">{result.summary}</p>
               {result.status === 'factual' && <p className="caption">{t.factualNote}</p>}
               {result.status === 'insufficient' && <p className="caption">{t.insufficientNote}</p>}

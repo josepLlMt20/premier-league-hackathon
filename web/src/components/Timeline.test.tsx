@@ -49,6 +49,12 @@ it('offers only three received events and has no navigation for an empty prefix'
     />,
   );
   expect(screen.getAllByRole('button')).toHaveLength(3);
+  expect(screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
+    'Go to Pass · 00:20',
+    'Go to Pass · 00:30',
+    'Go to Pass · 00:40',
+  ]);
+  expect(screen.getAllByRole('button').at(-1)).toHaveAttribute('aria-current', 'step');
   expect(screen.queryByRole('button', { name: 'Go to Pass · 00:10' })).not.toBeInTheDocument();
   rerender(<Timeline view={{ ...view, recent_events: [] }} language="en" onSeek={seek} />);
   expect(screen.queryByRole('button')).not.toBeInTheDocument();

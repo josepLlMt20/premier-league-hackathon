@@ -2,24 +2,10 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-/**
- * Heyclicky Card — a window resting on the dotted desktop.
- *
- * White body, hairline edge, 14px corner, and a soft low shadow. The heavier
- * far-throw is reserved for surfaces that actually float (dialogs, menus), so
- * a page full of cards stays calm.
- */
+/** Quiet structural surface; the studio uses rules rather than floating cards. */
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        'rounded-xl border border-border bg-card text-card-foreground',
-        'shadow-[var(--shadow-sm)]',
-        className,
-      )}
-      {...props}
-    />
+    <div ref={ref} className={cn('studio-surface', className)} {...props} />
   ),
 );
 Card.displayName = 'Card';

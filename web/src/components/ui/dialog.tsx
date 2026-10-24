@@ -18,14 +18,7 @@ const DialogOverlay = React.forwardRef<
   HTMLDivElement,
   Omit<DialogPrimitive.Backdrop.Props, 'className'> & { className?: string }
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Backdrop
-    ref={ref}
-    className={cn(
-      'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm transition-opacity duration-150 data-starting-style:opacity-0 data-ending-style:opacity-0',
-      className,
-    )}
-    {...props}
-  />
+  <DialogPrimitive.Backdrop ref={ref} className={cn('dialog-overlay', className)} {...props} />
 ));
 DialogOverlay.displayName = 'DialogOverlay';
 
@@ -35,16 +28,9 @@ const DialogContent = React.forwardRef<
 >(({ className, children, closeLabel = 'Close', ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <DialogPrimitive.Popup
-      ref={ref}
-      className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl bg-background p-6 shadow-[var(--shadow-window)] transition-all duration-200 data-starting-style:opacity-0 data-starting-style:scale-95 data-starting-style:translate-y-[-48%] data-ending-style:opacity-0 data-ending-style:scale-95 data-ending-style:translate-y-[-48%] sm:rounded-lg md:w-full',
-        className,
-      )}
-      {...props}
-    >
+    <DialogPrimitive.Popup ref={ref} className={cn('dialog-content', className)} {...props}>
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-open:bg-accent data-open:text-muted-foreground">
+      <DialogPrimitive.Close className="dialog-close">
         <CloseLineIcon className="h-4 w-4" aria-hidden="true" />
         <span className="sr-only">{closeLabel}</span>
       </DialogPrimitive.Close>

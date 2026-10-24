@@ -18,11 +18,9 @@ import {
 import { copy } from '../../domain/copy';
 import { Pitch } from '../../components/Pitch';
 import { Scoreboard } from '../../components/Scoreboard';
-import { FootballLineIcon } from '../../components/icons';
 import { Timeline } from '../../components/Timeline';
 import { Status } from '../../components/Status';
 import { Card } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
 import { PlaybackControls } from './PlaybackControls';
 import { CatchUpPanel } from './CatchUpPanel';
 import { EvidencePanel } from './EvidencePanel';
@@ -171,33 +169,29 @@ export function Viewer({
   }
   return (
     <>
-      <div className="match-intro">
-        <div>
-          <Badge>{t.synthetic}</Badge>
-          <h1>{t.tagline}</h1>
+      <h1 className="sr-only">{t.tagline}</h1>
+      <div className="match-header">
+        <Scoreboard
+          metadata={metadata}
+          view={viewError ? null : state.view}
+          second={state.second}
+          language={state.preferences.language}
+        />
+        <div className="match-clock" aria-label={t.watching}>
+          <span className="clock-caption">{t.watching}</span>
+          <strong className="mono">{clock(state.second)}</strong>
+          <span className="playback-status">
+            {state.playing ? (state.view ? t.playing : t.buffering) : t.paused}
+          </span>
         </div>
-        <span className="intro-note">{t.watch}</span>
       </div>
       <div className="viewer-grid">
         <Card className="match-panel">
           <section aria-label={t.match}>
-            <div className="window-bar">
-              <span className="replay-label">
-                <FootballLineIcon aria-hidden="true" />
-                {t.watching} <strong className="mono">{clock(state.second)}</strong>
-              </span>
-              <Badge>{state.playing ? (state.view ? t.playing : t.buffering) : t.paused}</Badge>
-            </div>
             <div
               data-testid={state.view && !viewError ? 'match-view' : undefined}
               data-cutoff={state.view?.cutoff_sequence}
             >
-              <Scoreboard
-                metadata={metadata}
-                view={viewError ? null : state.view}
-                second={state.second}
-                language={state.preferences.language}
-              />
               {viewError ? (
                 <Status
                   language={state.preferences.language}

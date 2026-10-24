@@ -21,6 +21,13 @@ export function Pitch({
   const annulled = event && view?.annulled_event_ids.includes(event.event_id);
   const team = metadata.teams.find((team) => team.team_id === event?.team_id);
   const player = team?.players.find((player) => player.player_id === event?.player_id);
+  const label = event?.start
+    ? {
+        x: Math.max(1, Math.min(66, event.start.x - 26)),
+        y: event.start.y > 15 ? event.start.y - 12 : event.start.y + 5,
+        text: `${eventName(event.kind, language)} · ${player?.name || team?.name}${annulled ? ` · ${t.annulled}` : ''}`,
+      }
+    : null;
   return (
     <figure className="pitch-figure">
       <div className="pitch-heading">
@@ -96,6 +103,28 @@ export function Pitch({
               <circle className="event-point" cx={event.start.x} cy={event.start.y} r="1.6" />
               {event.end && (
                 <circle className="event-endpoint" cx={event.end.x} cy={event.end.y} r="1.2" />
+              )}
+              {label && (
+                <g className="pitch-callout" aria-hidden="true">
+                  <line
+                    x1={Math.min(label.x + 34, event.start.x)}
+                    y1={label.y + (label.y < event.start.y ? 5.5 : 0)}
+                    x2={event.start.x}
+                    y2={event.start.y}
+                    className="callout-leader"
+                  />
+                  <rect
+                    x={label.x}
+                    y={label.y}
+                    width="36"
+                    height="5.5"
+                    rx="0.5"
+                    className="callout-surface"
+                  />
+                  <text x={label.x + 1.2} y={label.y + 3.7} className="callout-text">
+                    {label.text.length > 27 ? `${label.text.slice(0, 26)}…` : label.text}
+                  </text>
+                </g>
               )}
             </g>
           )}
