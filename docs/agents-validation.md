@@ -1,5 +1,15 @@
 # Grounded agents: implementation and validation
 
+## Current deadline and professional samples
+
+The user's subsequent request replaces the local 10-second generation ceiling with a shared 25-second ceiling across configuration, orchestration and SDK/HTTP/function loops; calls/tools/tokens/admission caps are unchanged. Latest real HTTP samples returned accepted Foundry cards in Spanish (8.31 seconds of agent time) and English (16.25 seconds, including repair), with rejected candidates withheld. Earlier semantic failures and manually excluded outputs are retained in the report. These are point samples, not an editorial-quality or latency guarantee. [Deadline change, tests, measured attempts and live preview](foundry-deadline-validation.md). Older sections below retain their historical limits and observations.
+
+## Professional copy correction, 24 October
+
+The writer/reviewer now distinguish headline, explanatory context, speakable commentary and compact overlay. Numerical synthetic-shot-index claims require an explicit synthetic/heuristic index label and points unit; territorial-share values require attacking-third passing context and a percent unit. Exact repeated main fields are rejected after normalized rendering and may be repaired within the existing budget. These are narrow mechanical guards, not a semantic-quality guarantee. Higher index sums must not be described as higher shot volume without supporting shot counts.
+
+The bilingual scripted writer now supplies readable pattern-specific examples.65 frontend unit tests,269 backend tests and22 real browser journeys pass. Two separate real professional samples (ES/EN) returned factual fallback at the unchanged10-second deadline; English also encountered a free-number rejection. No new live editorial-quality success is claimed. See [professional validation and measured report](commentator-validation.md).
+
 Scope: task 4 of the approved plan. The analyst, writer and reviewer use one closed snapshot and explicit typed handoffs. This delivery does not add the API, web application, browser state, hosted agents or deployment. The previous persistent-ingestion PR is merged into master.
 
 ## Workflow
@@ -36,9 +46,9 @@ Connection setup warms the **same** refreshable [Azure Identity bearer-token pro
 | Model turns | Seven across all roles and repairs | Chat middleware reserves before each SDK provider turn, including the continuation after a tool result. |
 | Tools | Eight across a request | The initial application prefetch is charged through the scoped tool. Middleware reserves any additional model-requested calls before execution, including unknown names or invalid arguments. Scoped wrappers do not charge the same call twice. Direct offline tools enforce the same budget. |
 | Output | 1200 tokens per provider turn | Run options serialize into the actual SDK request body. |
-| Request duration | Ten seconds | Request-local monotonic deadline and cancellable asynchronous role calls. Timeout returns identified factual output. |
+| Request duration | 25 seconds (previously ten) | Request-local monotonic deadline and cancellable asynchronous role calls. Timeout returns identified factual output. |
 
-These are operational bounds, not a monetary cap or an assurance of successful generation within ten seconds. Cold startup/token acquisition is extra. The SDK middleware shape was checked against the [Microsoft middleware documentation](https://learn.microsoft.com/en-us/agent-framework/agents/middleware/chat-middleware); the provider uses the [Foundry application-owned agent pattern](https://learn.microsoft.com/en-us/agent-framework/agents/providers/microsoft-foundry).
+These are operational bounds, not a monetary cap or an assurance of successful generation within the deadline. Cold startup/token acquisition is extra. The SDK middleware shape was checked against the [Microsoft middleware documentation](https://learn.microsoft.com/en-us/agent-framework/agents/middleware/chat-middleware); the provider uses the [Foundry application-owned agent pattern](https://learn.microsoft.com/en-us/agent-framework/agents/providers/microsoft-foundry).
 
 ## Tests and current live status
 

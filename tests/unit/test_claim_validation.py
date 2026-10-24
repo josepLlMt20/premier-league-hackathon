@@ -126,3 +126,27 @@ def test_high_recovery_claims_keep_their_explicit_metric_qualifier(scoped, label
     claim = Claim(claim_id="qualified-recovery", kind="observed",
                   text=label + ": {{fact:" + fact.fact_id + "}}.", fact_ids=(fact.fact_id,))
     assert check_claim(claim, scoped) == ()
+
+@pytest.mark.parametrize("axis, comparator", [("x", "≥"), ("x", ">="), ("y", "<")])
+def test_aggregate_fact_values_cannot_be_substituted_for_pitch_coordinates(scoped, axis, comparator):
+    fact = next(f for f in scoped.facts if f.name == "high_recoveries" and f.value == 1)
+    claim = Claim(claim_id="false-threshold", kind="observed",
+                  text=f"High recoveries: attacking-normalized start {axis} {comparator} " + "{{fact:" + fact.fact_id + "}}.",
+                  fact_ids=(fact.fact_id,))
+    assert "unsupported_meaning" in check_claim(claim, scoped)
+
+@pytest.mark.parametrize("text", [
+    "High recoveries: normalized attacking start ≥ {value}.",
+    "High recoveries: normalized attacking start >= {value} m.",
+    "High recoveries: start at {value} metres.",
+])
+def test_count_facts_cannot_be_repurposed_as_thresholds_or_distances(scoped, text):
+    fact = next(f for f in scoped.facts if f.name == "high_recoveries" and f.value == 1)
+    claim = Claim(claim_id="threshold", kind="observed", text=text.replace("{value}", "{{fact:" + fact.fact_id + "}}"), fact_ids=(fact.fact_id,))
+    assert "unsupported_meaning" in check_claim(claim, scoped)
+
+
+def test_canonical_distance_facts_keep_their_real_metre_unit(scoped):
+    fact = next(f for f in scoped.facts if f.name == "pass_distance_total")
+    claim = Claim(claim_id="distance", kind="observed", text="Distancia total de pase: {{fact:" + fact.fact_id + "}} m.", fact_ids=(fact.fact_id,))
+    assert check_claim(claim, scoped) == ()

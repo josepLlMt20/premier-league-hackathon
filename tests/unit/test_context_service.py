@@ -73,3 +73,30 @@ def test_deadline_returns_explicit_factual_output_within_configured_budget(store
     result = asyncio.run(service.get_context(request))
     assert result.mode == "factual" and "deadline" in result.rejection_codes
     assert service._active == 0 and len(service.cache) == 0
+
+
+def test_three_roles_can_finish_beyond_the_old_ten_second_ceiling(stored):
+    log, request = stored
+    class TwelveSecondRun(ScriptedRunner):
+        async def run(self, role, payload, tools):
+            # Age the real shared budget without making the test sleep12seconds.
+            tools.budget.started -= 4
+            return await super().run(role, payload, tools)
+    service = ContextService(Settings(app_env="test", agent_mode="scripted"), log, TwelveSecondRun())
+    result = asyncio.run(service.get_context(request))
+    assert result.status == "verified" and result.trace.elapsed_seconds >= 12
+    assert result.trace.elapsed_seconds < 25
+    assert service._active == 0 and len(service.cache) == 1
+
+
+def test_longer_generation_budget_does_not_extend_storage_reads_past_web_read_timeout(stored, monkeypatch):
+    log, _ = stored
+    actual_wait = asyncio.wait_for
+    timeouts = []
+    async def wait(awaitable, timeout):
+        timeouts.append(timeout)
+        return await actual_wait(awaitable, timeout)
+    monkeypatch.setattr(asyncio, "wait_for", wait)
+    service = ContextService(Settings(context_timeout_seconds=25), log)
+    assert asyncio.run(service.read(lambda: "read")) == "read"
+    assert timeouts == [10]

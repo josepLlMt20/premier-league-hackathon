@@ -17,7 +17,7 @@ import {
   type Language,
 } from '../../domain/copy';
 import { clock } from '../../domain/playback';
-import { formatInterval } from './CatchUpPanel';
+import { formatInterval } from '../../domain/presentation';
 export function EvidencePanel({
   result,
   storyId,

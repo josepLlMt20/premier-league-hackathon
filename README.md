@@ -2,7 +2,7 @@
 
 Work in progress for the Microsoft and Premier League **Inside the Game: Developer Hackathon**.
 
-The planned application helps fans catch up on a missed part of a synthetic football match without revealing events beyond their playback position. A commentator mode will turn the same evidence into editorial briefings and short overlays. All teams, players and match events are fictional.
+The application helps fans catch up on a missed part of a synthetic football match without revealing events beyond their playback position. A commentator mode turns the same evidence into editorial briefings and short overlays. All teams, players and match events are fictional.
 
 ## Current status
 
@@ -13,7 +13,8 @@ The planned application helps fans catch up on a missed part of a synthetic foot
 - The analyst/writer/reviewer workflow, scoped tools, claim validation and explicit factual fallback are implemented and tested offline, including the real Foundry SDK with a simulated transport. The live bilingual Foundry smoke has also passed; measured results and limitations are in [agent validation](docs/agents-validation.md).
 - The temporal HTTP API, bounded views/evidence, isolated context cache and two-generation admission limit are implemented. A local single-process server runs an independent resumable ingestion scheduler.
 - The first fan web experience is implemented: bounded playback, Spanish/English catch-up, favorite team/detail preferences and inspectable evidence. The approved Touchline studio includes stable automatic playback, a result-bound shot comparison and a responsive evidence drawer. Touchline is the provisional English identity. [Web usage and validation](docs/web-validation.md).
-- Professional briefings/overlays, Azure application deployment, live Azure storage verification and user studies remain pending.
+- Professional briefings, commentary copy with caveats, local overlay previews and receipt-bound JSON exports are implemented. Changing audience preserves the selected minute. [Professional workflow and validation](docs/commentator-validation.md).
+- Azure application deployment, live Azure storage verification and user studies remain pending. The professional UI has been verified with explicitly programmed agents; its live Foundry editorial quality still requires evaluation.
 
 The connection probe is a small infrastructure check, not a demonstration of the complete product or proof of its spoiler protection.
 
@@ -29,6 +30,7 @@ The connection probe is a small infrastructure check, not a demonstration of the
 - [Agent workflow, validation and Foundry smoke status](docs/agents-validation.md)
 - [API usage, contracts, verification and limits](docs/api-validation.md)
 - [Fan web experience, running instructions and verification](docs/web-validation.md)
+- [Professional briefing/overlay workflow and verification](docs/commentator-validation.md)
 
 ## Open the fan experience locally
 
@@ -48,6 +50,8 @@ npm.cmd run dev
 ```
 
 Open `http://127.0.0.1:5173`. Playback starts paused at zero. Choose a minute, or **Ir al último minuto recibido**, then **Ponerme al día**. Only preferences survive a reload. To use the existing Foundry deployment, explicitly set `AGENT_MODE=foundry` before starting the backend; existing Azure identity/configuration is required and generation consumes model quota. Factual fallback remains visibly labeled.
+
+Select **Profesional**, then **Preparar briefing** for the editorial workflow. Factual mode retains facts and evidence but disables editorial exports. With verified cards, you can inspect their evidence, copy commentary with its limitations, preview a short overlay and download its JSON or the complete briefing. The preview has no connection to a broadcast system.
 
 ## Run the match engine locally
 
@@ -107,7 +111,7 @@ After Azure sign-in and configuring the existing `.env` endpoint and deployment,
 
 The output distinguishes `mode=foundry` from `mode=factual`, and `status=verified` from fallback or insufficient observations. It includes the request cutoff, accepted cards, resolved text, rejection codes and a concise usage trace. `--include-facts` includes the complete canonical fact registry. A failed local connection returns `foundry_startup_failed`; an in-request provider failure returns identified factual output.
 
-Requests are limited to seven model turns, eight tool executions (including candidate prefetch), 1200 output tokens per model turn and a ten-second request deadline. The application retrieves candidates before the analyst's model call; the analyst, writer and reviewer still run separately. Compact internal references are restored to canonical evidence before validation. Ordinary tests never call a model. The live test is a separate opt-in that consumes existing Azure quota:
+Requests are limited to seven model turns, eight tool executions (including candidate prefetch), 1200 output tokens per model turn and a 25-second request deadline. `CONTEXT_TIMEOUT_SECONDS` may lower that deadline; values above 25 are rejected. The web context timeout remains 30 seconds, and storage reads retain their 10-second cap. The application retrieves candidates before the analyst's model call; the analyst, writer and reviewer still run separately. Compact internal references are restored to canonical evidence before validation. [Deadline fix and real professional measurements](docs/foundry-deadline-validation.md). Ordinary tests never call a model. The live test is a separate opt-in that consumes existing Azure quota:
 
 ```powershell
 $env:RUN_FOUNDRY_LIVE = '1'

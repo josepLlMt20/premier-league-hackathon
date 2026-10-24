@@ -13,6 +13,7 @@ import httpx2
 from pydantic import ValidationError
 
 from match_context.domain.contracts import TraceStep
+from .base import MAX_CONTEXT_SECONDS
 from .wire import ROLE_OUTPUTS, WireCodec
 
 TOOL_NAMES = {"list_candidates", "read_facts", "inspect_events"}
@@ -60,6 +61,13 @@ Compare only the supplied recent and earlier windows. Do not infer a match phase
 half or clock time from metric values. Never describe a recent window as the end of the match.
 When citing high_recoveries, explicitly say "high recoveries" in English or "recuperaciones altas" in Spanish.
 Do not shorten this metric to "recoveries", "recovery count" or "high-value recoveries" in any card field.
+Every numeric shot_quality_total citation must explicitly name the synthetic/heuristic shot-quality index
+and its points unit (es: "índice sintético de tiro", "puntos"; en: "synthetic shot-quality index", "points").
+Every numeric territorial_share citation must name completed attacking-third passes and include % or percent.
+Bare comparisons such as "team: value, previously value" are not publishable.
+The registry has aggregate measurements, not coordinate/definition thresholds. Never put fact values into
+spatial formulas, inequality thresholds or metre coordinates. Explain high recoveries as recoveries in the
+attacking third, without a numeric definition. Do not quote numerical thresholds from method descriptions.
 """
 
 INSTRUCTIONS = {
@@ -70,6 +78,8 @@ Select only returned story IDs, most useful first; choose one for a simple fan a
 or commentators. Prefer meaningful distinct changes, respecting the favorite team without changing facts.
 Return selected_story_ids. Do not draft cards or review decisions.""",
     "writer": COMMON + """Write exactly one concise card for each supplied story. Match request.language (es/en).
+For es, every narrative field must be Spanish: use puntos, tiros and recuperaciones altas. Never append
+English translations or copy the English unit/method prose. For en, use English throughout.
 Always use entity markers, even
 instead of shortened team names.
 Use the supplied short fact aliases as support. Each card needs four claims: headline, explanation, line, overlay.
@@ -82,7 +92,16 @@ Cite only that story's facts. Claim IDs and canonical
 references are restored by code; do not generate them. Keep each claim to one short sentence.
 Keep the complete response compact. Headlines and overlays should be short; the rendered overlay must fit 140
 characters. Simple fans need plain football language and the main change; detailed fans need the comparison
-and what to watch. Commentators need a precise speakable line and useful editorial context. Do not treat the
+and what to watch. Give each field a different job; never repeat the same sentence across headline, explanation
+and line. Headline: identify the football change, not a naked statistic. Explanation: give the comparison and
+define unfamiliar measures. Line: a natural, self-contained sentence a commentator can read aloud, including
+the essential metric name/unit. Overlay: an independently understandable short label and main figure.
+For commentators, lead shot stories with shot counts when these clarify the change; keep the synthetic index
+as a labeled supporting detail. A higher quality-index sum alone does not prove more shots, better finishing,
+goal probability or tactical dominance. Use supplied shot-count facts to check volume before claiming an increase.
+Explain territorial share as each team's completed passes in its own attacking third relative to both teams'
+such passes; it is not total pass share. Avoid turning definitions into invented tactical explanations.
+Commentators need a precise speakable line and useful editorial context. Do not treat the
 heuristic shot-quality points as xG or a goal probability, or territorial passing share as possession or threat.
 For interpretations use cautious language and a nonempty limits array. Do not assert causal explanations.
 On repair, rewrite only supplied rejected stories using rejection_codes. Return cards.""",
@@ -90,7 +109,16 @@ On repair, rewrite only supplied rejected stories using rejection_codes. Return 
 the requested language/audience (including limitations). Reject invented match phases or time labels,
 mismatched metric labels, unsupported interpretation, causal language,
 incorrect comparisons, wrong audience or language, and missing essential qualifiers. Heuristic quality is not
-xG; territorial passing share is not possession duration or threat. Source limitations will also be displayed
+xG; territorial passing share is not possession duration or threat. Reject repeated headline/explanation/line,
+bare unlabelled numbers, synthetic quality values
+without an explicit synthetic-index label and points unit, and territorial values without attacking-third
+passing context and a percent unit. Reject a claim of increased shot volume unless shot-count facts support it.
+Use wrong_audience for redundant/unusable prose, unsupported_meaning for misrepresented measures.
+An observed claim MUST have empty limits: never reject it solely for missing limitations, since code adds
+the synthetic-data and metric caveats. Only interpretations require nonempty limitation codes.
+Reject metric values substituted into coordinate definitions or thresholds, even if their references exist.
+For es reject English narrative phrases or units; English machine enum values are not narrative text.
+Source limitations are displayed
 automatically, so an observed numeric headline need not repeat them. Return decisions, exactly one per supplied
 story_id. For rejection use allowed codes; for acceptance codes must be empty. No prose or private reasoning.""",
 }
@@ -102,11 +130,11 @@ class FoundryRunner:
     def __init__(self, client, *, http_client=None, token_provider=None):
         self.client = client
         self._original_client = client.client
-        self._http_client = http_client or httpx2.AsyncClient(timeout=10)
+        self._http_client = http_client or httpx2.AsyncClient(timeout=MAX_CONTEXT_SECONDS)
         if capture_usage not in self._http_client.event_hooks["response"]:
             self._http_client.event_hooks["response"].append(capture_usage)
         auth = {"api_key": token_provider} if token_provider is not None else {}
-        self.client.client = self._original_client.with_options(max_retries=0, timeout=10,
+        self.client.client = self._original_client.with_options(max_retries=0, timeout=MAX_CONTEXT_SECONDS,
                                                                http_client=self._http_client, **auth)
 
     async def run(self, role, payload, tools):
@@ -200,7 +228,7 @@ async def local_foundry_runner(*, project_endpoint=None, model=None):
         await token_provider()
         client = FoundryChatClient(project_endpoint=endpoint, model=model, credential=credential,
                                    function_invocation_configuration={"max_iterations": 7, "max_function_calls": 8,
-                                                                      "max_duration_seconds": 10})
+                                                                      "max_duration_seconds": MAX_CONTEXT_SECONDS})
         runner = FoundryRunner(client, token_provider=token_provider)
         yield runner
     finally:

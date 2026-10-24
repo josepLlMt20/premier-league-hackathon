@@ -10,12 +10,14 @@ from match_context.domain.events import FrozenModel
 if TYPE_CHECKING:
     from .tools import ScopedTools
 
+MAX_CONTEXT_SECONDS = 25
+
 
 class AgentLimits(FrozenModel):
     model_calls: int = Field(default=7, ge=1, le=7, strict=True)
     tool_calls: int = Field(default=8, ge=1, le=8, strict=True)
     output_tokens: int = Field(default=1200, ge=1, le=1200, strict=True)
-    deadline_seconds: float = Field(default=10, gt=0, le=10)
+    deadline_seconds: float = Field(default=MAX_CONTEXT_SECONDS, gt=0, le=MAX_CONTEXT_SECONDS)
 
 
 class BudgetExceeded(RuntimeError):

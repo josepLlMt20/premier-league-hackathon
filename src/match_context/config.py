@@ -4,6 +4,7 @@ import os
 from typing import Literal, Mapping
 
 from pydantic import Field, model_validator
+from match_context.agents.base import MAX_CONTEXT_SECONDS
 from match_context.domain.events import FrozenModel
 
 
@@ -18,7 +19,7 @@ class Settings(FrozenModel):
     max_model_calls: int = Field(default=7, ge=1, le=7)
     max_tool_calls: int = Field(default=8, ge=1, le=8)
     max_output_tokens: int = Field(default=1200, ge=1, le=1200)
-    context_timeout_seconds: float = Field(default=10, gt=0, le=10)
+    context_timeout_seconds: float = Field(default=MAX_CONTEXT_SECONDS, gt=0, le=MAX_CONTEXT_SECONDS)
     cache_capacity: int = Field(default=128, ge=1, le=128)
     max_concurrent_generations: int = Field(default=2, ge=1, le=2)
 

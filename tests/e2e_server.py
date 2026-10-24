@@ -21,16 +21,8 @@ class BilingualScriptedRunner(ScriptedRunner):
     async def run(self, role, payload, tools):
         if role != "writer":
             return await super().run(role, payload, tools)
-        cards = []
-        for story in payload["stories"]:
-            draft = draft_for(story)
-            if payload["request"]["language"] == "en":
-                draft = draft.model_copy(update={field: getattr(draft, field).model_copy(update={
-                    "text": getattr(draft, field).text.replace("recuperaciones altas:", "high recoveries:")
-                        .replace("antes", "previously")
-                }) for field in ("headline", "explanation", "suggested_line", "overlay")})
-            cards.append(draft)
-        return AgentOutput(cards=tuple(cards))
+        return AgentOutput(cards=tuple(draft_for(story, payload["request"]["language"])
+                                       for story in payload["stories"]))
 
 
 def make_app():

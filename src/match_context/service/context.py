@@ -12,6 +12,8 @@ from match_context.domain.contracts import ContextRequest, ContextResult
 from match_context.storage.base import EventLog, MatchNotFound, check_integer
 from .cache import ContextCache
 
+MAX_STORAGE_READ_SECONDS = 10
+
 
 class ServiceError(Exception):
     def __init__(self, status, code):
@@ -33,7 +35,7 @@ class ContextService:
     async def read(self, function, *args):
         try:
             return await asyncio.wait_for(asyncio.to_thread(function, *args),
-                                          timeout=self.settings.context_timeout_seconds)
+                                          timeout=min(MAX_STORAGE_READ_SECONDS, self.settings.context_timeout_seconds))
         except ServiceError:
             raise
         except MatchNotFound:

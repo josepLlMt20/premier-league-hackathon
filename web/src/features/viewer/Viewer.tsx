@@ -21,6 +21,9 @@ import { Scoreboard } from '../../components/Scoreboard';
 import { Timeline } from '../../components/Timeline';
 import { Status } from '../../components/Status';
 import { Card } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Commentator } from '../commentator/Commentator';
+import { professionalCopy } from '../commentator/copy';
 import { PlaybackControls } from './PlaybackControls';
 import { CatchUpPanel } from './CatchUpPanel';
 import { EvidencePanel } from './EvidencePanel';
@@ -55,6 +58,8 @@ export function Viewer({
   const headSecond = useRef(0);
   headSecond.current = head?.available_second || 0;
   const t = copy[state.preferences.language];
+  const p = professionalCopy[state.preferences.language];
+  const ContextPanel = state.role === 'commentator' ? Commentator : CatchUpPanel;
   useEffect(() => {
     try {
       localStorage.setItem(preferenceKey, JSON.stringify(state.preferences));
@@ -159,7 +164,7 @@ export function Viewer({
           match_id: metadata.match_id,
           from_sequence: from.to_sequence,
           to_sequence: view.cutoff_sequence,
-          role: 'fan',
+          role: state.role,
           ...state.preferences,
         },
         controller.signal,
@@ -193,7 +198,26 @@ export function Viewer({
           </span>
         </div>
       </div>
-      <div className="viewer-grid">
+      <div className="audience-bar" role="group" aria-label={p.audience}>
+        <span className="caption">{p.audience}</span>
+        <div className="audience-switch">
+          <Button
+            variant="ghost"
+            aria-pressed={state.role === 'fan'}
+            onClick={() => dispatch({ type: 'role', role: 'fan' })}
+          >
+            {p.fan}
+          </Button>
+          <Button
+            variant="ghost"
+            aria-pressed={state.role === 'commentator'}
+            onClick={() => dispatch({ type: 'role', role: 'commentator' })}
+          >
+            {p.professional}
+          </Button>
+        </div>
+      </div>
+      <div className={`viewer-grid${state.role === 'commentator' ? ' professional-grid' : ''}`}>
         <Card className="match-panel">
           <section aria-label={t.match}>
             <div
@@ -251,7 +275,7 @@ export function Viewer({
             )}
           </section>
         </Card>
-        <CatchUpPanel
+        <ContextPanel
           state={state}
           metadata={metadata}
           loading={contextLoading}

@@ -1,0 +1,611 @@
+{
+  "generation_cap_seconds": 25,
+  "browser_context_timeout_seconds": 30,
+  "storage_read_cap_seconds": 10,
+  "model_call_cap": 7,
+  "tool_call_cap": 8,
+  "output_token_cap_per_turn": 1200,
+  "max_concurrent_generations": 2,
+  "samples": [
+    {
+      "sample": "direct-es",
+      "stage": "25s initial",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "es",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "factual",
+      "mode": "factual",
+      "rejection_codes": [
+        "free_number",
+        "missing_limitation",
+        "missing_metric_qualifier",
+        "no_accepted_story",
+        "unsupported_meaning"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "system",
+            "decision": "factual_fallback"
+          }
+        ],
+        "tool_names": [
+          "list_candidates",
+          "read_facts"
+        ],
+        "model_calls": 6,
+        "tool_calls": 2,
+        "input_tokens": 19675,
+        "output_tokens": 1214,
+        "elapsed_seconds": 18.35
+      },
+      "inspection": null,
+      "cards": []
+    },
+    {
+      "sample": "direct-en",
+      "stage": "25s initial",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "en",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates",
+          "list_candidates"
+        ],
+        "model_calls": 4,
+        "tool_calls": 2,
+        "input_tokens": 13600,
+        "output_tokens": 387,
+        "elapsed_seconds": 9.5633
+      },
+      "inspection": "Accepted by agents; singular/plural wording remains rough.",
+      "cards": [
+        {
+          "story_id": "s-5dca8006688a3f64cbb772ee",
+          "headline": "Ámbar FC's shot-quality jumped after the earlier window",
+          "explanation": "Ámbar FC produced 148 synthetic shot-quality index points in the recent window versus 0 previously, with more shots recorded.",
+          "suggested_line": "Ámbar FC had 2 shots and a synthetic shot-quality index of 148 points in the recent interval, up from 1 shots and 0 points earlier.",
+          "overlay_text": "Shot-quality: 148 points (synthetic shot-quality index) — 2 shots",
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation.",
+            "Shot quality is a simulator heuristic, not calibrated xG.",
+            "Observed association in synthetic data.",
+            "Conclusion limited to the available event sample."
+          ]
+        }
+      ]
+    },
+    {
+      "sample": "http-es",
+      "stage": "25s HTTP before copy safeguards",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "es",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "factual",
+      "mode": "factual",
+      "rejection_codes": [
+        "missing_limitation",
+        "missing_metric_qualifier",
+        "no_accepted_story",
+        "wrong_language"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "system",
+            "decision": "factual_fallback"
+          }
+        ],
+        "tool_names": [
+          "list_candidates",
+          "list_candidates"
+        ],
+        "model_calls": 6,
+        "tool_calls": 2,
+        "input_tokens": 21392,
+        "output_tokens": 1390,
+        "elapsed_seconds": 19.0767
+      },
+      "inspection": null,
+      "cards": []
+    },
+    {
+      "sample": "http-en",
+      "stage": "25s HTTP before copy safeguards",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "en",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 9918,
+        "output_tokens": 668,
+        "elapsed_seconds": 9.4099
+      },
+      "inspection": "Excluded on manual inspection: a recovery count was substituted into a spatial threshold. Regression guards were added and the server/cache restarted.",
+      "cards": [
+        {
+          "story_id": "s-cac00907f3f9b0a5cd22bccb",
+          "headline": "Ámbar FC shows more high recoveries late in the window",
+          "explanation": "Ámbar FC had 4 high recoveries in the recent interval versus 1 earlier, counting recoveries with attacking-normalized start x ≥ 1.",
+          "suggested_line": "High recoveries (attacking-normalized start x ≥ 1): Ámbar FC recorded 4 recently, up from 1 earlier.",
+          "overlay_text": "High recoveries — Ámbar FC: 4 (was 1)",
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation."
+          ]
+        },
+        {
+          "story_id": "s-5dca8006688a3f64cbb772ee",
+          "headline": "Ámbar FC's shot-quality sum rose sharply with more shots",
+          "explanation": "The synthetic shot-quality index (points) rose to 148 from 0 while shots increased to 2 from 1, where the index is the sum of distance-and-pressure heuristic points.",
+          "suggested_line": "Shots: Ámbar FC had 2 (up from 1) and the synthetic shot-quality index reached 148 points (previously 0).",
+          "overlay_text": "Shots 2; synthetic shot-quality index 148 points (was 0)",
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation.",
+            "Shot quality is a simulator heuristic, not calibrated xG.",
+            "Observed association in synthetic data.",
+            "Conclusion limited to the available event sample."
+          ]
+        }
+      ]
+    },
+    {
+      "sample": "http-v2-es",
+      "stage": "25s HTTP after safeguards",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "es",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "rejection_codes": [],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 8108,
+        "output_tokens": 357,
+        "elapsed_seconds": 8.3128
+      },
+      "inspection": "Automatic validation passed; explanation wording remains awkward. This is not a human editorial approval.",
+      "cards": [
+        {
+          "story_id": "s-cac00907f3f9b0a5cd22bccb",
+          "headline": "Ámbar FC registra más recuperaciones altas en el último tramo",
+          "explanation": "Comparación: 4 recuperaciones altas entre 4 y el intervalo anterior de 1 recuperaciones altas; las recuperaciones altas son recuperaciones en el tercio atacante.",
+          "suggested_line": "Ámbar FC tuvo 4 recuperaciones altas en el periodo reciente frente a 1 en el periodo anterior; las recuperaciones altas son recuperaciones en el tercio atacante.",
+          "overlay_text": "Recuperaciones altas de Ámbar FC: 4 (antes 1)",
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Datos sintéticos; el cambio observado no demuestra una causa táctica.",
+            "Asociación observada en datos sintéticos."
+          ]
+        }
+      ]
+    },
+    {
+      "sample": "http-v2-en",
+      "stage": "25s HTTP after safeguards",
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "en",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "status": "verified",
+      "mode": "foundry",
+      "rejection_codes": [
+        "invalid_output",
+        "missing_limitation"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 5,
+        "tool_calls": 1,
+        "input_tokens": 15332,
+        "output_tokens": 940,
+        "elapsed_seconds": 16.2539
+      },
+      "inspection": "One accepted card; other candidates rejected. Partial accepted output is preserved after repair.",
+      "cards": [
+        {
+          "story_id": "s-cac00907f3f9b0a5cd22bccb",
+          "headline": "Ámbar FC generates more high recoveries in the recent window",
+          "explanation": "Ámbar FC had 4 high recoveries in the most recent interval versus 1 previously, indicating more recoveries in the attacking third.",
+          "suggested_line": "High recoveries (attacking-third) for Ámbar FC rose to 4 from 1 between the two windows.",
+          "overlay_text": "High recoveries — 4 (now) vs 1 (before)",
+          "current_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 1200,
+            "end_second": 1500
+          },
+          "comparison_interval": {
+            "start_sequence": 0,
+            "end_sequence": 269,
+            "start_second": 900,
+            "end_second": 1200
+          },
+          "limitations": [
+            "Synthetic data; an observed change does not establish tactical causation.",
+            "Observed association in synthetic data."
+          ]
+        }
+      ]
+    },
+    {
+      "sample": "diagnostic-es",
+      "stage": "25s role profiling before safeguards",
+      "status": "verified",
+      "mode": "foundry",
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          },
+          {
+            "role": "reviewer",
+            "decision": "rejected"
+          }
+        ],
+        "tool_names": [
+          "list_candidates",
+          "list_candidates"
+        ],
+        "model_calls": 6,
+        "tool_calls": 2,
+        "input_tokens": 21768,
+        "output_tokens": 1288,
+        "elapsed_seconds": 20.5686
+      },
+      "inspection": "Excluded on manual inspection: count substituted into a coordinate definition; fixed by safeguards. Raw draft text and private provider data are not included.",
+      "role_timing": [
+        {
+          "role": "analyst",
+          "seconds": 4.191
+        },
+        {
+          "role": "writer",
+          "seconds": 5.096
+        },
+        {
+          "role": "reviewer",
+          "seconds": 3.646
+        },
+        {
+          "role": "writer",
+          "seconds": 5.494
+        },
+        {
+          "role": "reviewer",
+          "seconds": 2.1
+        }
+      ]
+    }
+  ],
+  "limits": "Point samples, not latency or prose-quality guarantees. All rejected and manually excluded observations are retained. Additional user-driven preview requests are not counted in this diagnostic report."
+}

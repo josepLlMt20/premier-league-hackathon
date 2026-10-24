@@ -79,6 +79,32 @@ it('starts at zero and loads only cursor-bounded views', async () => {
   expect(api.fetchView).toHaveBeenCalledWith(metadata.match_id, 0, expect.any(AbortSignal));
   expect(api.requestContext).not.toHaveBeenCalled();
 });
+it('keeps the selected frame when switching audience and sends the professional role to the same API', async () => {
+  await ready();
+  await seek(400);
+  const late = deferred<api.ContextResult>();
+  vi.mocked(api.requestContext).mockReturnValueOnce(late.promise);
+  fireEvent.click(screen.getByRole('button', { name: 'Ponerme al día' }));
+  await waitFor(() => expect(api.requestContext).toHaveBeenCalledTimes(1));
+  const priorSignal = vi.mocked(api.requestContext).mock.calls[0][1];
+  fireEvent.click(screen.getByRole('button', { name: 'Profesional' }));
+  expect(priorSignal.aborted).toBe(true);
+  expect(screen.getByTestId('playback-clock')).toHaveTextContent('06:40');
+  expect(screen.getByTestId('score')).toHaveTextContent('0 – 0');
+  await act(async () => late.resolve(context));
+  expect(screen.queryByText(context.summary)).not.toBeInTheDocument();
+  vi.mocked(api.requestContext).mockResolvedValueOnce({
+    ...context,
+    request: { ...context.request, role: 'commentator' },
+    summary: 'Resumen profesional.',
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Preparar briefing' }));
+  await screen.findByText('Resumen profesional.');
+  expect(api.requestContext).toHaveBeenLastCalledWith(
+    expect.objectContaining({ role: 'commentator', to_sequence: 1 }),
+    expect.any(AbortSignal),
+  );
+});
 it('keeps score, pitch and timeline mounted during a delayed automatic frame, then commits the clock with the result', async () => {
   await ready();
   await seek(400);

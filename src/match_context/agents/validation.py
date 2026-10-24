@@ -8,6 +8,13 @@ MARKER = re.compile(r"\{\{(fact|entity):([A-Za-z0-9_-]+)\}\}")
 CAUSAL = re.compile(r"\b(caused|causes|proves|therefore|because|causó|causa|causaron|demuestra|provocó|porque)\b|due to|gracias a", re.I)
 HIGH_RECOVERY_LABEL = re.compile(r"\b(?:high[-\s]+recover(?:y|ies)|recuperaci(?:ón|ones)[-\s]+altas?)\b", re.I)
 RECOVERY_WORD = re.compile(r"\b(?:recover\w*|recuper\w*)\b", re.I)
+SHOT_INDEX_LABEL = re.compile(r"(?:calidad|índice|puntuación).*?(?:sintétic|heurístic)|(?:synthetic|heuristic).*?(?:shot|quality)", re.I)
+POINT_UNIT = re.compile(r"\b(?:puntos|points)\b", re.I)
+THIRD_PASS_LABEL = re.compile(r"(?:pases?|passes|passing).*?(?:último tercio|tercio ofensivo|attacking[-\s]+third)|attacking[-\s]+third.*?pass", re.I)
+PERCENT_UNIT = re.compile(r"%|\b(?:por ciento|percent)\b", re.I)
+FACT_AS_COORDINATE = re.compile(r"\b[xy]\s*(?:[<>]=?|[=≥≤≈:])\s*\{\{fact:", re.I)
+FACT_AS_THRESHOLD = re.compile(r"(?:[<>]=?|[≥≤])\s*\{\{fact:")
+METRE_UNIT = re.compile(r"\s*(?:m|metres?|meters?|metros?)\b", re.I)
 
 
 def check_claim(claim: Claim, tools) -> tuple[str, ...]:
@@ -27,6 +34,17 @@ def check_claim(claim: Claim, tools) -> tuple[str, ...]:
             codes.add("free_number")
         text = unicodedata.normalize("NFKC", text)
         markers = MARKER.findall(text)
+        # The narrative fact registry contains aggregate match metrics, not
+        # pitch coordinates or definition thresholds. A real count reference
+        # must not be repurposed as a spatial threshold (e.g. a count of 1
+        # rendered as x >= 1 instead of the canonical 70 m definition).
+        if FACT_AS_COORDINATE.search(text) or FACT_AS_THRESHOLD.search(text):
+            codes.add("unsupported_meaning")
+        for marker in MARKER.finditer(text):
+            kind, identifier = marker.groups()
+            fact = tools.fact_map.get(identifier) if kind == "fact" else None
+            if fact and fact.unit != "m" and METRE_UNIT.match(text[marker.end():]):
+                codes.add("unsupported_meaning")
         for kind, identifier in markers:
             if kind == "fact" and (identifier not in tools.fact_map or identifier not in claim.fact_ids):
                 codes.add("unknown_fact")
@@ -38,6 +56,12 @@ def check_claim(claim: Claim, tools) -> tuple[str, ...]:
         high_number = any(kind == "fact" and identifier in tools.fact_map
                           and tools.fact_map[identifier].name == "high_recoveries" for kind, identifier in markers)
         if high_support and (high_number or RECOVERY_WORD.search(free)) and not HIGH_RECOVERY_LABEL.search(free):
+            codes.add("missing_metric_qualifier")
+        numeric_metrics = {tools.fact_map[identifier].name for kind, identifier in markers
+                           if kind == "fact" and identifier in tools.fact_map}
+        if "shot_quality_total" in numeric_metrics and not (SHOT_INDEX_LABEL.search(free) and POINT_UNIT.search(free)):
+            codes.add("missing_metric_qualifier")
+        if "territorial_share" in numeric_metrics and not (THIRD_PASS_LABEL.search(free) and PERCENT_UNIT.search(free)):
             codes.add("missing_metric_qualifier")
         if "{{" in free or "}}" in free:
             codes.add("invalid_marker")
@@ -74,6 +98,11 @@ def check_draft(draft, tools, candidate) -> tuple[str, ...]:
         codes.add("unrelated_support")
     if len({claim.claim_id for claim in draft.claims()}) != 4:
         codes.add("duplicate_claim")
+    if not codes:
+        main_fields = [re.sub(r"\W+", " ", render_claim(claim, tools).casefold()).strip()
+                       for claim in draft.claims()[:3]]
+        if len(set(main_fields)) != 3:
+            codes.add("repetitive_copy")
     if not codes and len(render_claim(draft.overlay, tools)) > 140:
         codes.add("overlay_length")
     return tuple(sorted(codes))

@@ -32,7 +32,7 @@ An independent review of `692c483..0bbc9e1` found no actionable Critical, Import
 
 The React/Vite/TypeScript fan experience consumes the existing temporal API. It shows the score known at the selected minute, one recorded event on an SVG pitch, recent events, a missed-segment recap and optional supporting evidence. Spanish/English, simple/detailed output and favorite-team preferences feed the same backend context request.
 
-The local product is runnable; deployment, professional briefings and evaluation with real users remain separate work. The current frontend tests use factual or explicitly scripted output. They do not establish new Foundry narrative quality, latency or cloud readiness.
+The local product is runnable. Professional briefings are now implemented and documented in [professional workflow and validation](commentator-validation.md); deployment and evaluation with real users remain separate work. The current frontend tests use factual or explicitly scripted output. They do not establish new Foundry narrative quality, latency or cloud readiness.
 
 ## Reproduce
 
