@@ -627,6 +627,15 @@ export interface operations {
                     readonly "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Additional Response */
+            readonly 499: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Service Unavailable */
             readonly 503: {
                 headers: {

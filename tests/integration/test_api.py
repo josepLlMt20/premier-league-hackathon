@@ -1,4 +1,6 @@
 import asyncio
+import json
+import socket
 
 import httpx
 import pytest
@@ -184,3 +186,114 @@ def test_storage_error_is_sanitized_and_health_stays_independent(api_case, monke
         assert client.get("/healthz").status_code == 200
         response = client.get(f"/api/matches/{match.metadata.match_id}/head")
         assert response.status_code == 503 and "private" not in response.text
+
+
+def test_http_disconnect_cancels_generation_and_allows_replacement_request(api_case):
+    from match_context.api.app import create_app
+    _, log, match, _, _ = api_case
+
+    async def run():
+        entered, cancelled = asyncio.Event(), asyncio.Event()
+
+        class Abandoned(ScriptedRunner):
+            first = True
+            async def run(self, role, payload, tools):
+                if role == "analyst" and self.first:
+                    self.first = False
+                    entered.set()
+                    try:
+                        await asyncio.Event().wait()
+                    except asyncio.CancelledError:
+                        cancelled.set()
+                        raise
+                return await super().run(role, payload, tools)
+
+        app = create_app(Settings(app_env="test", agent_mode="scripted", max_concurrent_generations=1),
+                         log, Abandoned())
+        messages, sent = asyncio.Queue(), []
+        body = json.dumps(request_for(match)).encode()
+        await messages.put({"type": "http.request", "body": body, "more_body": False})
+        async def receive():
+            return await messages.get()
+        async def send(message):
+            sent.append(message)
+        scope = {"type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1", "method": "POST",
+                 "scheme": "http", "path": "/api/context", "raw_path": b"/api/context", "root_path": "",
+                 "query_string": b"", "headers": [(b"content-type", b"application/json")],
+                 "client": ("127.0.0.1", 1111), "server": ("test", 80)}
+        task = asyncio.create_task(app(scope, receive, send))
+        try:
+            await asyncio.wait_for(entered.wait(), 2)
+            assert app.state.context_service._active == 1
+            await messages.put({"type": "http.disconnect"})
+            await asyncio.wait_for(cancelled.wait(), .5)
+            await asyncio.wait_for(task, 1)
+            assert app.state.context_service._active == 0
+            assert len(app.state.context_service.cache) == 0
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+                replacement = await client.post("/api/context", json=request_for(match))
+            assert replacement.status_code == 200 and replacement.json()["status"] == "verified"
+        finally:
+            if not task.done():
+                task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+    asyncio.run(run())
+
+
+def test_real_tcp_disconnect_releases_generation_slot(api_case):
+    import uvicorn
+    from match_context.api.app import create_app
+    _, log, match, _, _ = api_case
+
+    async def run():
+        entered, cancelled = asyncio.Event(), asyncio.Event()
+        class Held(ScriptedRunner):
+            first = True
+            async def run(self, role, payload, tools):
+                if role == "analyst" and self.first:
+                    self.first = False
+                    entered.set()
+                    try:
+                        await asyncio.Event().wait()
+                    except asyncio.CancelledError:
+                        cancelled.set()
+                        raise
+                return await super().run(role, payload, tools)
+
+        app = create_app(Settings(app_env="test", agent_mode="scripted", max_concurrent_generations=1), log, Held())
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        server = uvicorn.Server(uvicorn.Config(app, log_level="critical", lifespan="off", timeout_graceful_shutdown=1))
+        server_task = asyncio.create_task(server.serve(sockets=[sock]))
+        writer = None
+        try:
+            async def started():
+                while not server.started:
+                    await asyncio.sleep(.005)
+            await asyncio.wait_for(started(), 2)
+            _, writer = await asyncio.open_connection("127.0.0.1", port)
+            body = json.dumps(request_for(match)).encode()
+            writer.write(b"POST /api/context HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\n"
+                         + f"Content-Length: {len(body)}\r\n\r\n".encode() + body)
+            await writer.drain()
+            await asyncio.wait_for(entered.wait(), 2)
+            writer.close()
+            await writer.wait_closed()
+            await asyncio.wait_for(cancelled.wait(), 1)
+            async def released():
+                while app.state.context_service._active:
+                    await asyncio.sleep(.001)
+            await asyncio.wait_for(released(), 1)
+            assert len(app.state.context_service.cache) == 0
+            async with httpx.AsyncClient(base_url=f"http://127.0.0.1:{port}") as client:
+                response = await client.post("/api/context", json=request_for(match))
+            assert response.status_code == 200 and response.json()["status"] == "verified"
+        finally:
+            if writer is not None:
+                writer.close()
+                await writer.wait_closed()
+            server.should_exit = True
+            await asyncio.wait_for(server_task, 3)
+            sock.close()
+    asyncio.run(run())

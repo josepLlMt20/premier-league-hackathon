@@ -1,9 +1,11 @@
+import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Path, Query, Request
 from match_context.domain.contracts import ContextRequest, ContextResult, EvidenceBundle
 from match_context.domain.events import MatchMetadata
-from .schemas import EvidenceRequest, Health, MatchHead, MatchView, ResolvedCursor
+from match_context.service.context import ServiceError
+from .schemas import ErrorResponse, EvidenceRequest, Health, MatchHead, MatchView, ResolvedCursor
 
 router = APIRouter()
 MatchId = Annotated[str, Path(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$")]
@@ -41,9 +43,28 @@ async def view(request: Request, match_id: MatchId, to_sequence: Cutoff):
     return await request.app.state.context_service.view(match_id, to_sequence)
 
 
-@router.post("/api/context", response_model=ContextResult)
+async def _wait_for_disconnect(request):
+    # FastAPI has already consumed and validated this route's JSON body.
+    while (await request.receive())["type"] != "http.disconnect":
+        pass
+
+
+@router.post("/api/context", response_model=ContextResult, responses={499: {"model": ErrorResponse}})
 async def context(request: Request, body: ContextRequest):
-    return await request.app.state.context_service.get_context(body)
+    generation = asyncio.create_task(request.app.state.context_service.get_context(body))
+    disconnected = asyncio.create_task(_wait_for_disconnect(request))
+    try:
+        await asyncio.wait((generation, disconnected), return_when=asyncio.FIRST_COMPLETED)
+        if generation.done():
+            return await generation
+        # This normally has no recipient: the client has closed its connection.
+        raise ServiceError(499, "client_disconnected")
+    finally:
+        for task in (generation, disconnected):
+            if not task.done():
+                task.cancel()
+        # Await provider/slot cleanup before this HTTP lifecycle is finished.
+        await asyncio.gather(generation, disconnected, return_exceptions=True)
 
 
 @router.post("/api/evidence", response_model=EvidenceBundle)
