@@ -1,0 +1,16 @@
+{
+  "library": "mingcute",
+  "prefix": "mingcute",
+  "variant": "line",
+  "source": "iconify",
+  "icons": [
+    "arrow-right-line",
+    "close-line",
+    "fast-rewind-line",
+    "football-line",
+    "pause-line",
+    "play-line",
+    "settings-2-line",
+    "target-line"
+  ]
+}
