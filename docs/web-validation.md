@@ -8,6 +8,8 @@ Regressions first reproduced the optimistic clock and disappearing score/sequenc
 
 Latest real factual captures: [desktop](evidence/playback-2026-10-24/01-escritorio.png), [mobile](evidence/playback-2026-10-24/04-movil.png), [field without labels](evidence/playback-2026-10-24/06-campo.png). Both widths use cutoff269 at25:00, score1–0 and zero model calls; no console/page errors were recorded. Earlier studio captures below remain historical.
 
+Independent scoped review of `d2e0cf4..bd227c9` found no Critical/Important issues and independently passed24 focused tests. One Minor suggestion remains: show an indicator during sustained slow automatic reads. Do not switch to a buffering message on every normal read, which would reintroduce visual flicker; any follow-up should use a delay threshold. The committed clock stays accurate during the wait, and explicit read failures have retry controls.
+
 ## Current studio refinement (24 October)
 
 The user-approved Estudio de partido design supersedes the earlier Heyclicky appearance described in historical notes below. The visible provisional English identity is **Touchline**, with a local generated abstract sequence mark and self-hosted IBM Plex Sans. Backend names, identifiers and storage keys remain stable.
