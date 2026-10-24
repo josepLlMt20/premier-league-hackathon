@@ -175,7 +175,7 @@ export function Viewer({
               <span>
                 {t.watching} <strong className="mono">{clock(state.second)}</strong>
               </span>
-              <Badge>{state.playing ? t.playing : t.paused}</Badge>
+              <Badge>{state.playing ? (state.view ? t.playing : t.buffering) : t.paused}</Badge>
             </div>
             {viewError ? (
               <Status

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initialPlayback, reducePlayback, applyContext } from './playback';
+import { initialPlayback, reducePlayback, applyContext, type PlaybackState } from './playback';
 import { context, view } from '../test-fixtures';
 
 describe('temporal playback', () => {
@@ -45,15 +45,31 @@ describe('temporal playback', () => {
     expect(next.speed).toBe(5);
   });
   it('an advancing shared head cannot restart or slow the viewer timer', () => {
-    let state = { ...initialPlayback(), playing: true, speed: 5 };
+    let state: PlaybackState = { ...initialPlayback(), view, playing: true, speed: 5 };
     state = reducePlayback(state, { type: 'advance', headSecond: 100 });
+    state = { ...state, view };
     state = reducePlayback(state, { type: 'advance', headSecond: 200 });
     expect(state.second).toBe(10);
     expect(state.requestKey).toBe(2);
-    state = reducePlayback(state, { type: 'advance', headSecond: 12 });
+    state = reducePlayback({ ...state, view }, { type: 'advance', headSecond: 12 });
     expect(state.second).toBe(12);
-    state = reducePlayback(state, { type: 'advance', headSecond: 12 });
+    state = reducePlayback({ ...state, view }, { type: 'advance', headSecond: 12 });
     expect(state.playing).toBe(false);
     expect(reducePlayback(state, { type: 'advance', headSecond: 100 }).second).toBe(12);
+  });
+  it('buffers automatic playback while a bounded read is pending, without invalidating it', () => {
+    const pending = {
+      ...initialPlayback(),
+      second: 400,
+      playing: true,
+      view: null,
+      requestKey: 10,
+    };
+    const tick = reducePlayback(pending, { type: 'advance', headSecond: 1500 });
+    expect(tick.second).toBe(400);
+    expect(tick.requestKey).toBe(10);
+    const rewind = reducePlayback(pending, { type: 'seek', second: 0 });
+    expect(rewind.second).toBe(0);
+    expect(rewind.requestKey).toBe(11);
   });
 });

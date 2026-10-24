@@ -560,6 +560,16 @@ details > summary {
 .fact-value {
   font-size: 1.5rem;
 }
+.metric-definition {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.metric-definition summary {
+  color: var(--foreground);
+}
+.metric-definition p {
+  margin-bottom: var(--space-3);
+}
 .reference {
   font-family: var(--font-mono);
   font-size: 0.75rem;

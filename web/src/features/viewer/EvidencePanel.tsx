@@ -8,7 +8,14 @@ import {
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
 import { Status } from '../../components/Status';
-import { copy, eventName, limitText, metricName, type Language } from '../../domain/copy';
+import {
+  copy,
+  eventName,
+  limitText,
+  metricName,
+  methodText,
+  type Language,
+} from '../../domain/copy';
 import { clock } from '../../domain/playback';
 import { formatInterval } from './CatchUpPanel';
 export function EvidencePanel({
@@ -129,13 +136,19 @@ export function EvidencePanel({
                           )}{' '}
                       {fact.unit === 'ratio'
                         ? '(0–1)'
-                        : fact.unit === 'heuristic points' && language === 'es'
-                          ? 'puntos heurísticos'
+                        : fact.unit === 'heuristic points'
+                          ? language === 'es'
+                            ? 'puntos heurísticos'
+                            : fact.unit
                           : ['%', 'm'].includes(fact.unit)
                             ? fact.unit
                             : ''}
                     </strong>
                     <span>{formatInterval(fact.interval)}</span>
+                    <details className="metric-definition">
+                      <summary>{language === 'es' ? 'Definición' : 'Definition'}</summary>
+                      <p>{methodText(fact.method, language)}</p>
+                    </details>
                     <span className="caption">
                       {t.sample}: {fact.sample_count}
                       {fact.denominator != null ? ` · n = ${fact.denominator}` : ''}

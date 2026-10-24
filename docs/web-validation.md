@@ -26,6 +26,7 @@ For manual use, start `match_context.server` in factual or explicitly configured
 - Start paused at zero; only static match metadata is preloaded. The shared head exposes received time without the current score. Every selected second resolves a cursor before fetching a bounded view. There is no fixture download, ingestion write route or full-match browser store.
 - Seeking clears the old score, pitch, events, context and open evidence immediately. Both abort and local increasing request keys reject late cursor/view/context completions. Cached server trace IDs are never client request keys.
 - Generating pauses local playback so the request refers to a stable missed segment. Seeking or changing language/detail/team/start invalidates it; changing a preference preserves the selected minute. Pause/speed do not mutate or stop shared ingestion.
+- Automatic playback buffers while its selected frame is loading. Slow reads reduce achieved playback speed, rather than being repeatedly cancelled by the one-second timer. Deliberate seeks, including rewinds, still clear/cancel immediately.
 - Evidence uses the immutable context snapshot and cutoff, loads on demand in batches of at most 100 requested IDs, validates snapshot identity and cancels/ignores late responses when closed. Source dependencies may legitimately include more events. Units, intervals, sample sizes and caveats remain visible. Escape/back returns focus and retains playback time.
 - Only validated preferences go to localStorage. Storage failure/private mode is tolerated; neither match data, generated narrative nor playback cursor is persisted there. Reload starts at zero.
 - API reads time out after 15 seconds and context requests after 30 seconds; these browser limits do not alter backend model budgets. A pending recap has cancellation and a slower-than-usual message after ten seconds. The backend's factual fallback is kept distinct from reviewed model narrative and guided scripted tests. No streamed partial text is produced by this API.
@@ -41,17 +42,20 @@ No NVDA/VoiceOver session, Safari/Firefox run, load/latency study or real-user u
 ## Verification record
 
 - Full pinned Python suite: **255 passed, one opted-in live test skipped**, warnings as errors, 98.55 seconds. No Python production behavior changes in this branch.
-- Vitest: **20 passed**. Includes delayed/out-of-order transport completions even after abort, cached trace reuse, rewind clearing, language/cursor preservation, focus return, cancellation, slow runs, head-poll serialization, timeout recovery and metric units.
-- Real HTTP/SQLite Playwright suite: **six passed**, 40.3 seconds, covering desktop and 390px mobile. Page and open-dialog axe scans report zero violations under the selected WCAG A/AA tags. Spanish/English, evidence bounds, independent ingestion, native keyboard playback, 320px reflow and preference-only storage are checked.
+- Vitest after the review fix pass: **23 passed**. Includes delayed/out-of-order transport completions even after abort, cached trace reuse, rewind clearing, language/cursor preservation, focus return, cancellation, slow runs, head-poll serialization, timeout recovery, read buffering, bilingual metric units and definitions.
+- Real HTTP/SQLite Playwright suite after the fix pass: **eight passed**, 47.4 seconds, covering desktop and 390px mobile. The new regression delays bounded views by 1,200ms, longer than the one-second timer, and proves frames still complete during playback. Page and open-dialog axe scans report zero violations under the selected WCAG A/AA tags. Spanish/English, evidence bounds, independent ingestion, native keyboard playback, 320px reflow and preference-only storage are checked.
 - Build, dependency consistency, formatting, exported OpenAPI and generated immutable TypeScript drift checks pass. The original Windows CRLF-only schema check failure was reproduced, normalized bytes were identical, and generated-file LF checkout rules make regeneration/check reproducible.
 - Better Design measured 390/1440/1728px: zero Critical/Serious geometry findings. Seven moderate heuristics concern intentional fluid auto margins, a 24px column gutter and full-width window borders with separate content padding; interpretation is recorded in `DESIGN.md`. This is not a claim of a perfect tool score or user-validated layout.
-- Independent whole-branch review follows these checks; any findings/fixes are recorded below.
+- A fresh independent whole-branch reviewer independently passed the original20 unit tests, six browser journeys, build, types and formatting. It found no Critical, one Important slow-read playback defect and two evidence issues initially labeled Minor (English shot-quality unit and missing supplied definition). The evidence issues were treated together as an Important interpretability gap: an arbitrary heuristic without its scale/method is not an adequate explanation for a fan. All were fixed in one pass, with failing regressions observed before fixes; no second reviewer was dispatched.
+- A clean dependency install/build succeeds. API drift also passes in an archive taken from the repository root, including its checkout attributes. A `HEAD:web` subtree archive omits the parent `.gitattributes` and converts line endings on this Windows host; that incomplete archive is not the reproducible checkout procedure.
 
 Rendered examples use the clearly labeled scripted test backend:
 
 ![Desktop fan view](evidence/fan-desktop.png)
 
 [Mobile fan view](evidence/fan-mobile.png)
+
+Review boundaries: unchanged backend chronology/storage/agent/HTTP behavior retains prior review and the passing255-test suite. New real Foundry/browser evaluation, Azure deployment/identity/load, professional exports, usefulness sessions, other browsers/screen readers and the exhaustive four-scenario/two-viewer matrix remain later checks. Cutoff-aware playback does not claim protection against a user deliberately requesting already-ingested future public synthetic data or tampering with trusted API JSON.
 
 ## Licenses
 

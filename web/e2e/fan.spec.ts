@@ -3,6 +3,33 @@ import AxeBuilder from '@axe-core/playwright';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import type { ContextResult, MatchView } from '../src/api/client';
 const output = '../tmp/ui-validation';
+test('playback completes slow bounded reads without cancelling them on every tick', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.getByTestId('match-view')).toBeVisible();
+  await page.route('**/view?*', async (route) => {
+    const response = await route.fetch();
+    const body = await response.body(),
+      status = response.status(),
+      headers = response.headers();
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    if (!page.isClosed()) await route.fulfill({ body, status, headers }).catch(() => {});
+  });
+  await page.getByRole('button', { name: 'Reproducir', exact: true }).click();
+  await expect
+    .poll(async () => {
+      const [minutes, seconds] = (await page.getByTestId('playback-clock').innerText())
+        .split(':')
+        .map(Number);
+      return minutes * 60 + seconds;
+    })
+    .toBeGreaterThanOrEqual(2);
+  await expect(page.getByTestId('match-view')).toBeVisible({ timeout: 5000 });
+  await expect(page.getByRole('button', { name: 'Pausar', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pausar', exact: true }).click();
+  await page.unroute('**/view?*');
+});
 async function seek(page: Page, second: number) {
   const input = page.getByRole('slider', { name: /Minuto del partido|Match minute/ });
   await input.evaluate((element, second) => {

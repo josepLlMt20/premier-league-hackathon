@@ -41,7 +41,9 @@ export function initialPlayback(): PlaybackState {
 export function reducePlayback(state: PlaybackState, action: Action): PlaybackState {
   switch (action.type) {
     case 'advance': {
-      if (!state.playing) return state;
+      // Automatic playback buffers behind its pending frame. A manual seek still
+      // invalidates immediately, so rewinds cannot retain later data.
+      if (!state.playing || !state.view) return state;
       const second = Math.min(action.headSecond, state.second + state.speed);
       return second === state.second
         ? { ...state, playing: false }

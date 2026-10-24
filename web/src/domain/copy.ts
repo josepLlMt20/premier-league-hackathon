@@ -14,6 +14,7 @@ export const copy = {
     received: 'Datos recibidos hasta',
     paused: 'En pausa',
     playing: 'Reproduciendo',
+    buffering: 'Cargando el minuto…',
     time: 'Minuto del partido',
     play: 'Reproducir',
     pause: 'Pausar',
@@ -82,6 +83,7 @@ export const copy = {
     received: 'Data received through',
     paused: 'Paused',
     playing: 'Playing',
+    buffering: 'Loading this minute…',
     time: 'Match minute',
     play: 'Play',
     pause: 'Pause',
@@ -209,4 +211,31 @@ export function limitText(code: string, language: Language) {
     ],
   };
   return limits[code]?.[language === 'es' ? 0 : 1] || code.replaceAll('_', ' ');
+}
+
+// Definitions come from MetricFact.method. Translate only known authoritative
+// descriptions; preserve unknown methods instead of inventing an explanation.
+export function methodText(method: string, language: Language): string {
+  if (language === 'en') return method;
+  const definitions: Record<string, string> = {
+    'All attempted passes.': 'Todos los pases intentados.',
+    'Passes tagged completed.': 'Pases marcados como completados.',
+    'Completed / attempted passes × 100.': 'Pases completados / pases intentados × 100.',
+    'Euclidean distance of every attempted pass.':
+      'Suma de la distancia euclídea de cada pase intentado.',
+    'Shot events; linked goals are not additional shots.':
+      'Eventos de tiro; los goles vinculados no cuentan como tiros adicionales.',
+    'Shots tagged on target.': 'Tiros marcados como dirigidos a portería.',
+    'Effective goal events at the knowledge cutoff.':
+      'Goles válidos según la información recibida hasta este minuto.',
+    'Recovery events.': 'Eventos de recuperación.',
+    'Recoveries with attacking-normalized start x ≥ 70 m.':
+      'Recuperaciones cuyo inicio, normalizado según el sentido de ataque, tiene x ≥ 70 m.',
+    'Pressure events applied by this team.': 'Eventos de presión ejercida por este equipo.',
+    'Sum of distance-and-pressure shot-quality heuristic; not calibrated xG.':
+      'Suma de una heurística de calidad de tiro basada en distancia y presión; no es xG calibrado.',
+    "Team's completed attacking-third passes / both teams' such passes × 100.":
+      'Pases completados por este equipo en el último tercio / los completados en ese tercio por ambos equipos × 100.',
+  };
+  return definitions[method] || method;
 }
