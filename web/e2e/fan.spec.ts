@@ -12,6 +12,10 @@ test('event motion is finite, respects reduced motion and removes the previous e
   const received = page.waitForResponse((r) => r.url().includes('/view?'));
   await seek(page, 1500);
   const bounded: MatchView = await (await received).json();
+  await page.locator('.moment-button').nth(1).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('slider', { name: 'Minuto del partido' })).toBeFocused();
+  await expect(page.getByTestId('match-view')).toBeVisible();
   const pass = bounded.recent_events.find(
     (event, index, events) =>
       event.kind === 'pass' && events[index + 1]?.available_second > event.available_second + 1,
@@ -24,18 +28,29 @@ test('event motion is finite, respects reduced motion and removes the previous e
   ).toBe('0.45s');
   await seek(page, pass.available_second + 1);
   await expect(page.locator('.event-mark')).not.toHaveClass(/event-arriving/);
-  await seek(page, pass.available_second + 2);
+  await seek(page, 1500);
   await page.route('**/view?to_sequence=0', async (route) => {
     const response = await route.fetch(),
       body = await response.body();
     await new Promise((resolve) => setTimeout(resolve, 500));
     await route.fulfill({ body, status: response.status(), headers: response.headers() });
   });
-  await page.getByRole('slider', { name: 'Minuto del partido' }).evaluate((el) => {
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(el, '0');
-    el.dispatchEvent(new Event('input', { bubbles: true }));
+  const oldEvent = await page.locator('.event-mark').elementHandle();
+  const wasRunning = await page.evaluate(() => {
+    const cue = document.querySelector('.event-halo')!.getAnimations()[0];
+    // Place the real CSS animation inside its finite timeline, then dispatch the
+    // rewind in the same task: no timing gap can turn this into an idle-state test.
+    cue.currentTime = 100;
+    cue.play();
+    const running = cue.playState === 'running';
+    const control = document.querySelector('#match-time')!;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(control, '0');
+    control.dispatchEvent(new Event('input', { bubbles: true }));
+    return running;
   });
+  expect(wasRunning).toBe(true);
   await expect(page.locator('.event-mark')).toHaveCount(0);
+  expect(await oldEvent!.evaluate((el) => el.isConnected)).toBe(false);
   await expect(page.getByTestId('score')).toHaveCount(0);
   await expect(page.getByRole('img', { name: /Cargando el minuto/ })).toBeVisible();
   await expect(page.getByTestId('match-view')).toHaveAttribute('data-cutoff', '0');

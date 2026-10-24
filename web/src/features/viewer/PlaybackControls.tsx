@@ -6,10 +6,12 @@ export function PlaybackControls({
   state,
   headSecond,
   dispatch,
+  sliderRef,
 }: {
   state: PlaybackState;
   headSecond: number;
   dispatch: React.Dispatch<Action>;
+  sliderRef?: React.Ref<HTMLInputElement>;
 }) {
   const t = copy[state.preferences.language];
   return (
@@ -21,6 +23,7 @@ export function PlaybackControls({
         </output>
       </label>
       <input
+        ref={sliderRef}
         id="match-time"
         className="time-range"
         type="range"

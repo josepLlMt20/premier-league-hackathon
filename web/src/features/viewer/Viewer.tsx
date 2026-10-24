@@ -49,6 +49,7 @@ export function Viewer({
   const [evidenceSelected, setEvidenceSelected] = useState(false);
   const [animateEvent, setAnimateEvent] = useState(false);
   const seenEvent = useRef<string | null>(null);
+  const timeControl = useRef<HTMLInputElement>(null);
   const currentKey = useRef(state.requestKey);
   currentKey.current = state.requestKey;
   const generation = useRef<AbortController | null>(null),
@@ -216,6 +217,7 @@ export function Viewer({
             </div>
             {head && (
               <PlaybackControls
+                sliderRef={timeControl}
                 state={state}
                 headSecond={head.available_second}
                 dispatch={dispatch}
@@ -238,7 +240,12 @@ export function Viewer({
               <Timeline
                 view={state.view}
                 language={state.preferences.language}
-                onSeek={(second) => dispatch({ type: 'seek', second })}
+                onSeek={(second) => {
+                  // The shortcut disappears as its bounded frame reloads. Move
+                  // focus first to a stable control for continued keyboard use.
+                  timeControl.current?.focus({ preventScroll: true });
+                  dispatch({ type: 'seek', second });
+                }}
               />
             )}
           </section>

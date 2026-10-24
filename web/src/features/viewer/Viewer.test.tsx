@@ -96,6 +96,15 @@ it('keeps a neutral pitch while a rewound frame loads, with no old player or sco
     pending.resolve({ ...view, cutoff_sequence: 0, snapshot_id: 'zero', recent_events: [] }),
   );
 });
+it('moves focus to the stable time control when a recent-action shortcut reloads the frame', async () => {
+  await ready();
+  await seek(400);
+  const shortcut = screen.getByRole('button', { name: 'Ir a Pase · 06:40' });
+  shortcut.focus();
+  fireEvent.click(shortcut);
+  await waitFor(() => expect(screen.getByTestId('match-view')).toHaveAttribute('data-cutoff', '1'));
+  expect(screen.getByRole('slider', { name: 'Minuto del partido' })).toHaveFocus();
+});
 it('aborts the later view and ignores it even if the transport still resolves', async () => {
   await ready();
   await seek(400);
