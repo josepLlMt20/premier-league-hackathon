@@ -11,3 +11,5 @@ The current application remains unchanged. Match data shown in these concepts is
 ## Revised brief
 
 The user rejected the first three directions: the goal is a professional, serious and usable tool with custom visual craft, not additional decoration. `04-mesa-de-partido.png` is the single revised proposal, pending review before implementation. See [the proposal notes](mesa-de-partido.md) for the brief, visual decisions and generation prompt.
+
+The user found Mesa de partido directionally useful but still too plain. `05-estudio-de-partido.png` is the next proposed revision: more contemporary composition, a tailored replay transport and a connected context/evidence module. It remains unimplemented. See [Estudio de partido](estudio-de-partido.md) for the visual brief, proposed interactions and prompts.
