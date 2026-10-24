@@ -234,11 +234,36 @@ h3 {
   content: '·';
   margin-right: var(--space-2);
 }
+.audience-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.audience-switch {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-1);
+  background: var(--card);
+}
+.audience-switch button {
+  min-height: 44px;
+  border-radius: 3px;
+}
+.audience-switch button[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
 .viewer-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
   align-items: start;
   gap: var(--space-5);
+}
+.viewer-grid.professional-grid {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
 }
 .studio-surface {
   min-width: 0;
@@ -882,6 +907,215 @@ details > summary {
   color: var(--muted-foreground);
   font-size: 0.8125rem;
 }
+.commentator-panel {
+  padding: var(--space-6);
+}
+.commentator-panel h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
+.professional-hint {
+  margin-top: var(--space-2);
+  font-size: 0.875rem;
+}
+.professional-controls {
+  margin-top: var(--space-6);
+}
+.briefing-export {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.briefing-export .caption {
+  flex: 1 1 180px;
+}
+.professional-result {
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  animation: recap-arrives var(--motion-recap) var(--ease-out) both;
+}
+.briefing-card {
+  padding-block: var(--space-6);
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.briefing-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.briefing-card-header .story-number {
+  margin: 0;
+  font-size: 1rem;
+}
+.briefing-card h3 {
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+.briefing-section {
+  margin-top: var(--space-5);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.briefing-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: 0.8125rem;
+}
+.briefing-label span {
+  color: var(--muted-foreground);
+}
+.briefing-section blockquote {
+  border-left: 3px solid var(--primary);
+  background: var(--secondary);
+  padding: var(--space-4);
+}
+.briefing-facts {
+  margin-block: var(--space-4);
+}
+.briefing-facts summary,
+.trace-panel summary {
+  min-height: 44px;
+  display: list-item;
+  cursor: pointer;
+  padding-block: var(--space-3);
+  font-size: 0.875rem;
+  font-weight: 550;
+}
+.briefing-facts dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-top: 1px solid var(--border);
+  padding-block: var(--space-3);
+  font-size: 0.875rem;
+}
+.briefing-facts dd {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+.briefing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.briefing-actions button {
+  min-height: 44px;
+}
+.copy-status {
+  margin-top: var(--space-2);
+}
+.overlay-preview {
+  padding-top: var(--space-6);
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.section-heading h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.overlay-stage {
+  background: var(--stage);
+  color: var(--stage-foreground);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-5);
+  border-radius: 4px;
+  margin-bottom: var(--space-4);
+}
+.overlay-stage-note {
+  font-size: 0.75rem;
+  color: var(--stage-muted);
+  margin-bottom: var(--space-8);
+}
+.overlay-graphic {
+  border-left: 3px solid var(--club-home);
+  padding: var(--space-4);
+  background: var(--card);
+  color: var(--foreground);
+  animation: recap-arrives var(--motion-recap) var(--ease-out) both;
+}
+.overlay-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.overlay-graphic > strong {
+  display: block;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  line-height: 1.25;
+  margin-block: var(--space-3);
+  overflow-wrap: anywhere;
+}
+.overlay-kind {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+.overlay-graphic ul {
+  font-size: 0.75rem;
+  margin-top: var(--space-2);
+  color: var(--muted-foreground);
+  padding-left: var(--space-4);
+}
+.trace-panel {
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+.trace-panel ol {
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+}
+.trace-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 0.8125rem;
+}
+.trace-panel li span {
+  color: var(--muted-foreground);
+}
+.trace-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.professional-fallback {
+  padding-block: var(--space-4);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.professional-fallback > button {
+  margin-top: var(--space-4);
+}
 .status {
   padding: var(--space-6);
   font-size: 0.875rem;
@@ -1118,7 +1352,31 @@ details > summary {
     font-size: 0.6875rem;
   }
 }
+@media (max-width: 900px) {
+  .viewer-grid.professional-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (max-width: 480px) {
+  .commentator-panel {
+    padding: var(--space-4);
+  }
+  .audience-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .overlay-stage,
+  .overlay-graphic {
+    padding: var(--space-3);
+  }
+  .briefing-actions {
+    flex-direction: column;
+  }
+  .briefing-actions button,
+  .briefing-export button {
+    width: 100%;
+  }
   .app-shell {
     padding-inline: var(--space-3);
     padding-bottom: var(--space-6);

@@ -2,12 +2,24 @@ import { expect, it } from 'vitest';
 import { exportBriefing, overlayFor, canExportBriefing } from './export';
 import { professionalFrame, professionalResult, briefingCard } from './fixtures';
 import { view } from '../../test-fixtures';
-const readBlob = (blob: Blob) => new Promise<any>((resolve, reject) => {
-  const reader = new FileReader(); reader.onload = () => resolve(JSON.parse(reader.result as string)); reader.onerror = reject; reader.readAsText(blob);
-});
+const readBlob = (blob: Blob) =>
+  new Promise<any>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(JSON.parse(reader.result as string));
+    reader.onerror = reject;
+    reader.readAsText(blob);
+  });
 it('exports the captured score, cutoff, intervals, rendered claims and limitations without reading current state', async () => {
   const blob = exportBriefing(professionalFrame);
-  const later = { ...view, cutoff_sequence: 9, snapshot_id: 'later', score: [{ team_id: 'home', goals: 9 }, { team_id: 'away', goals: 0 }] };
+  const later = {
+    ...view,
+    cutoff_sequence: 9,
+    snapshot_id: 'later',
+    score: [
+      { team_id: 'home', goals: 9 },
+      { team_id: 'away', goals: 0 },
+    ],
+  };
   expect(later.score[0].goals).toBe(9);
   const payload = await readBlob(blob);
   expect(payload.snapshot_id).toBe(view.snapshot_id);
@@ -27,13 +39,22 @@ it('keeps validated overlay text unchanged and carries its evidence, time and li
   expect(overlay.cutoff_sequence).toBe(1);
   expect(overlay.displayed_second).toBe(400);
 });
-it.each(['factual', 'insufficient'] as const)('blocks %s results even if they contain a spurious card', (status) => {
-  const frame = { ...professionalFrame, result: { ...professionalResult, status } };
-  expect(canExportBriefing(frame)).toBe(false);
-  expect(() => exportBriefing(frame)).toThrow();
-});
+it.each(['factual', 'insufficient'] as const)(
+  'blocks %s results even if they contain a spurious card',
+  (status) => {
+    const frame = { ...professionalFrame, result: { ...professionalResult, status } };
+    expect(canExportBriefing(frame)).toBe(false);
+    expect(() => exportBriefing(frame)).toThrow();
+  },
+);
 it.each([
-  { ...professionalFrame, result: { ...professionalResult, request: { ...professionalResult.request, role: 'fan' as const } } },
+  {
+    ...professionalFrame,
+    result: {
+      ...professionalResult,
+      request: { ...professionalResult.request, role: 'fan' as const },
+    },
+  },
   { ...professionalFrame, view: { ...view, snapshot_id: 'other' } },
   { ...professionalFrame, view: { ...view, cutoff_sequence: 2 } },
   { ...professionalFrame, second: 100 },
@@ -44,10 +65,23 @@ it.each([
 });
 it('cannot export an unknown/rejected story even when another accepted story exists', () => {
   expect(() => overlayFor(professionalFrame, 'rejected-story')).toThrow();
-  expect(canExportBriefing({ ...professionalFrame, result: { ...professionalResult, rejection_codes: ['another_story_rejected'] } })).toBe(true);
+  expect(
+    canExportBriefing({
+      ...professionalFrame,
+      result: { ...professionalResult, rejection_codes: ['another_story_rejected'] },
+    }),
+  ).toBe(true);
 });
 it('counts Unicode code points and refuses an oversized overlay instead of truncating it', () => {
-  const frame = { ...professionalFrame, result: { ...professionalResult, cards: [{ ...briefingCard, overlay_text: '⚽'.repeat(140) }] } };
+  const frame = {
+    ...professionalFrame,
+    result: { ...professionalResult, cards: [{ ...briefingCard, overlay_text: '⚽'.repeat(140) }] },
+  };
   expect(overlayFor(frame, briefingCard.story_id).text).toBe('⚽'.repeat(140));
-  expect(canExportBriefing({ ...frame, result: { ...frame.result, cards: [{ ...briefingCard, overlay_text: '⚽'.repeat(141) }] } })).toBe(false);
+  expect(
+    canExportBriefing({
+      ...frame,
+      result: { ...frame.result, cards: [{ ...briefingCard, overlay_text: '⚽'.repeat(141) }] },
+    }),
+  ).toBe(false);
 });

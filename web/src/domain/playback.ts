@@ -47,8 +47,17 @@ export function initialPlayback(): PlaybackState {
 export function reducePlayback(state: PlaybackState, action: Action): PlaybackState {
   switch (action.type) {
     case 'role':
-      return action.role === state.role ? state : { ...state, role: action.role, playing: false,
-        pendingSecond: null, context: null, evidenceOpen: false, requestKey: state.requestKey + 1 };
+      return action.role === state.role
+        ? state
+        : {
+            ...state,
+            role: action.role,
+            playing: false,
+            pendingSecond: null,
+            context: null,
+            evidenceOpen: false,
+            requestKey: state.requestKey + 1,
+          };
     case 'advance': {
       // Keep the committed frame/clock intact while one automatic read is pending.
       // Manual navigation still clears immediately, including backwards seeks.
@@ -131,7 +140,9 @@ export function applyContext(
   result: components['schemas']['ContextResult'],
   key: number,
 ): PlaybackState {
-  return key === state.requestKey && result.snapshot_id === state.view?.snapshot_id && result.request.role === state.role
+  return key === state.requestKey &&
+    result.snapshot_id === state.view?.snapshot_id &&
+    result.request.role === state.role
     ? { ...state, context: result }
     : state;
 }

@@ -4,7 +4,15 @@ import { context, view } from '../test-fixtures';
 
 describe('temporal playback', () => {
   it('switches audience without moving the committed frame and rejects an old fan response', () => {
-    const state = { ...initialPlayback(), second: 400, view, context, playing: true, pendingSecond: 401, evidenceOpen: true };
+    const state = {
+      ...initialPlayback(),
+      second: 400,
+      view,
+      context,
+      playing: true,
+      pendingSecond: 401,
+      evidenceOpen: true,
+    };
     const next = reducePlayback(state, { type: 'role', role: 'commentator' });
     expect(next.role).toBe('commentator');
     expect(next.second).toBe(400);
