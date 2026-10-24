@@ -7,3 +7,7 @@ Three generated visual mockups of the existing fan viewer layout, saved for remo
 3. `03-club-electrico.png` — light canvas, cobalt and amber sports graphics.
 
 The current application remains unchanged. Match data shown in these concepts is synthetic.
+
+## Revised brief
+
+The user rejected the first three directions: the goal is a professional, serious and usable tool with custom visual craft, not additional decoration. `04-mesa-de-partido.png` is the single revised proposal, pending review before implementation. See [the proposal notes](mesa-de-partido.md) for the brief, visual decisions and generation prompt.
