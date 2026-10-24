@@ -29,6 +29,18 @@ test('professional receipts export bounded briefing and overlay, with evidence a
   expect(result.request.role).toBe('commentator');
   expect(result.mode).toBe('scripted');
   expect(result.cards.length).toBeGreaterThan(0);
+  await expect(page.locator('.professional-result .recap-summary')).toHaveCount(0);
+  for (const card of result.cards) {
+    expect(new Set([card.headline, card.explanation, card.suggested_line]).size).toBe(3);
+    const names = card.claims
+      .flatMap((claim) => claim.fact_ids || [])
+      .map((id) => result.facts.find((fact) => fact.fact_id === id)?.name);
+    if (names.includes('shot_quality_total')) {
+      expect(card.explanation).toContain('índice sintético de tiro');
+      expect(card.explanation).toContain('puntos');
+      expect(card.suggested_line).toContain('tiros');
+    }
+  }
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Descargar briefing JSON', exact: true }).click();
   const briefing = JSON.parse(readFileSync((await (await download).path())!, 'utf8'));

@@ -6,6 +6,8 @@ export const professionalCopy = {
     workspace: 'Estudio de comentarista',
     title: 'Briefing de partido',
     hint: 'Historias listas para preparar tu próxima intervención.',
+    stories: (count: number) =>
+      `${count} ${count === 1 ? 'historia' : 'historias'} para tu próxima intervención.`,
     action: 'Preparar briefing',
     generating: 'Preparando el briefing…',
     cancel: 'Cancelar briefing',
@@ -54,6 +56,8 @@ export const professionalCopy = {
     workspace: 'Commentator studio',
     title: 'Match briefing',
     hint: 'Evidence-led stories for your next contribution.',
+    stories: (count: number) =>
+      `${count} ${count === 1 ? 'story' : 'stories'} for your next contribution.`,
     action: 'Prepare briefing',
     generating: 'Preparing the briefing…',
     cancel: 'Cancel briefing',

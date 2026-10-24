@@ -8,6 +8,10 @@ MARKER = re.compile(r"\{\{(fact|entity):([A-Za-z0-9_-]+)\}\}")
 CAUSAL = re.compile(r"\b(caused|causes|proves|therefore|because|causó|causa|causaron|demuestra|provocó|porque)\b|due to|gracias a", re.I)
 HIGH_RECOVERY_LABEL = re.compile(r"\b(?:high[-\s]+recover(?:y|ies)|recuperaci(?:ón|ones)[-\s]+altas?)\b", re.I)
 RECOVERY_WORD = re.compile(r"\b(?:recover\w*|recuper\w*)\b", re.I)
+SHOT_INDEX_LABEL = re.compile(r"(?:calidad|índice|puntuación).*?(?:sintétic|heurístic)|(?:synthetic|heuristic).*?(?:shot|quality)", re.I)
+POINT_UNIT = re.compile(r"\b(?:puntos|points)\b", re.I)
+THIRD_PASS_LABEL = re.compile(r"(?:pases?|passes|passing).*?(?:último tercio|tercio ofensivo|attacking[-\s]+third)|attacking[-\s]+third.*?pass", re.I)
+PERCENT_UNIT = re.compile(r"%|\b(?:por ciento|percent)\b", re.I)
 
 
 def check_claim(claim: Claim, tools) -> tuple[str, ...]:
@@ -38,6 +42,12 @@ def check_claim(claim: Claim, tools) -> tuple[str, ...]:
         high_number = any(kind == "fact" and identifier in tools.fact_map
                           and tools.fact_map[identifier].name == "high_recoveries" for kind, identifier in markers)
         if high_support and (high_number or RECOVERY_WORD.search(free)) and not HIGH_RECOVERY_LABEL.search(free):
+            codes.add("missing_metric_qualifier")
+        numeric_metrics = {tools.fact_map[identifier].name for kind, identifier in markers
+                           if kind == "fact" and identifier in tools.fact_map}
+        if "shot_quality_total" in numeric_metrics and not (SHOT_INDEX_LABEL.search(free) and POINT_UNIT.search(free)):
+            codes.add("missing_metric_qualifier")
+        if "territorial_share" in numeric_metrics and not (THIRD_PASS_LABEL.search(free) and PERCENT_UNIT.search(free)):
             codes.add("missing_metric_qualifier")
         if "{{" in free or "}}" in free:
             codes.add("invalid_marker")
@@ -74,6 +84,11 @@ def check_draft(draft, tools, candidate) -> tuple[str, ...]:
         codes.add("unrelated_support")
     if len({claim.claim_id for claim in draft.claims()}) != 4:
         codes.add("duplicate_claim")
+    if not codes:
+        main_fields = [re.sub(r"\W+", " ", render_claim(claim, tools).casefold()).strip()
+                       for claim in draft.claims()[:3]]
+        if len(set(main_fields)) != 3:
+            codes.add("repetitive_copy")
     if not codes and len(render_claim(draft.overlay, tools)) > 140:
         codes.add("overlay_length")
     return tuple(sorted(codes))

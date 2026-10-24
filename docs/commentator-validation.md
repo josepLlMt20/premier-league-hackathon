@@ -10,12 +10,14 @@ Exports reject factual/insufficient results, fan receipts, missing/unknown stori
 
 ## Verification
 
-- 64 Vitest tests passed, including immutable export receipts, 140/141 Unicode code points, role cancellation/late responses, clipboard failure and missing-trace handling.
+- 65 Vitest tests passed, including immutable export receipts, 140/141 Unicode code points, role cancellation/late responses, clipboard failure, missing-trace handling and removal of the duplicated locution aggregate above accepted cards.
 - 22 real HTTP/SQLite Playwright journeys passed across desktop 1440px and mobile 390px, including the existing fan journeys, actual downloaded JSON, fallback, language invalidation, clipboard/download failure, evidence focus return, 320px reflow and axe WCAG checks with no reported violations.
 - TypeScript/production build and generated API contract check passed. Prettier check passed after normalizing local Windows line endings; unchanged files add no semantic diff.
-- Backend production code is unchanged. Its pre-branch 255-passed/one opt-in live test skipped result is retained, not represented as a fresh backend run.
+- 269 backend tests passed; one opt-in live test was skipped. The copy correction updates Foundry instructions and narrow publication checks, with14 editorial regressions covering distinct fields, labeled units, repair/fallback and not inferring shot volume from the quality index.
 
-The browser suite uses `tests.e2e_server`, real ingestion/snapshots and explicitly programmed analyst/writer/reviewer responses. Captures visibly say **Prueba guiada · texto programado** and the trace reports zero model calls. These checks establish integration and receipt safety, not real Foundry language quality. Programmed descriptions intentionally repeat simple source facts; they are not a demonstration of polished AI commentary.
+The browser suite uses `tests.e2e_server`, real ingestion/snapshots and explicitly programmed analyst/writer/reviewer responses. Captures visibly say **Prueba guiada · texto programado** and the trace reports zero model calls. The revised bilingual templates give distinct roles to headline, explanation, commentary and overlay. Shot stories lead with actual counts when they increase; the synthetic quality index is labeled in points as supporting detail. Territorial copy defines completed attacking-third passing share across both teams. These scripted checks do not establish live Foundry language quality.
+
+Two separate professional samples were attempted against the existing Foundry deployment at25:00, in Spanish and English. Both returned factual fallback at the unchanged10-second deadline; the English attempt also recorded `free_number` during repair. No real editorial card was published. Seven model turns were attempted across the two samples; no additional retry or budget increase followed. [Measured report](evidence/commentator-2026-10-24/live-copy-probe.json). Live editorial quality and latency remain unresolved; the revised demo must not be presented as live-model output.
 
 The main preview remains factual, with no Azure calls. An isolated guided preview can be run in separate terminals without changing it:
 
@@ -35,7 +37,7 @@ Open `http://127.0.0.1:5175`, select 25:00 and request a professional briefing. 
 
 Real rendered captures: [desktop overview](evidence/commentator-2026-10-24/desktop-overview.png), [complete studio](evidence/commentator-2026-10-24/desktop-studio.png), [overlay](evidence/commentator-2026-10-24/desktop-overlay.png), [evidence](evidence/commentator-2026-10-24/desktop-evidence.png), [mobile](evidence/commentator-2026-10-24/mobile-studio.png) and [320px](evidence/commentator-2026-10-24/mobile-320.png).
 
-The UI was inspected in the in-app browser with its explicit scripted provenance. Better Design's exhausted quota was not retried; the approved Touchline system, local tokens/font/icons and actual browser evidence were used. This change adds no runtime dependency, new Azure resource, paid upgrade or new live provider request. Public deployment, real storage smoke and professional user research remain separate work.
+The UI was inspected in the in-app browser with its explicit scripted provenance. Better Design's exhausted quota was not retried; the approved Touchline system, local tokens/font/icons and actual browser evidence were used. This change adds no runtime dependency, new Azure resource or paid upgrade. The two bounded live probes above consumed existing model quota; the main preview remains factual. Public deployment, real storage smoke and professional user research remain separate work.
 ## Independent branch review
 
 One fresh reviewer examined `049c99d..6e7cdc1`, including cancellation, role isolation, receipt exports, references, Unicode limits, failures, provenance, accessibility markup and supplied desktop/320px captures. No actionable findings or deferred minors. The reviewer independently ran64/64 unit tests and `git diff --check`; browser/build evidence above was produced by the implementer. No second review or fix loop was needed.

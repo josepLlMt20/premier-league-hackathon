@@ -83,3 +83,20 @@ it('does not invent zero calls or claim no workflow when the trace is unavailabl
   expect(screen.getByText('No hay una traza disponible para este resultado.')).toBeVisible();
   expect(screen.getByText('Llamadas al modelo: —')).toBeVisible();
 });
+
+it('does not repeat the locution aggregate above accepted professional cards but retains factual summaries', () => {
+  const p = props();
+  const { container, rerender } = render(<Commentator {...p} />);
+  expect(container.querySelector('.recap-summary')).not.toBeInTheDocument();
+  expect(screen.getByText('1 historia para tu próxima intervención.')).toBeVisible();
+  rerender(
+    <Commentator
+      {...p}
+      state={{
+        ...p.state,
+        context: { ...professionalResult, status: 'factual', mode: 'factual', cards: [] },
+      }}
+    />,
+  );
+  expect(container.querySelector('.recap-summary')).toHaveTextContent(professionalResult.summary);
+});

@@ -60,6 +60,10 @@ Compare only the supplied recent and earlier windows. Do not infer a match phase
 half or clock time from metric values. Never describe a recent window as the end of the match.
 When citing high_recoveries, explicitly say "high recoveries" in English or "recuperaciones altas" in Spanish.
 Do not shorten this metric to "recoveries", "recovery count" or "high-value recoveries" in any card field.
+Every numeric shot_quality_total citation must explicitly name the synthetic/heuristic shot-quality index
+and its points unit (es: "índice sintético de tiro", "puntos"; en: "synthetic shot-quality index", "points").
+Every numeric territorial_share citation must name completed attacking-third passes and include % or percent.
+Bare comparisons such as "team: value, previously value" are not publishable.
 """
 
 INSTRUCTIONS = {
@@ -82,7 +86,16 @@ Cite only that story's facts. Claim IDs and canonical
 references are restored by code; do not generate them. Keep each claim to one short sentence.
 Keep the complete response compact. Headlines and overlays should be short; the rendered overlay must fit 140
 characters. Simple fans need plain football language and the main change; detailed fans need the comparison
-and what to watch. Commentators need a precise speakable line and useful editorial context. Do not treat the
+and what to watch. Give each field a different job; never repeat the same sentence across headline, explanation
+and line. Headline: identify the football change, not a naked statistic. Explanation: give the comparison and
+define unfamiliar measures. Line: a natural, self-contained sentence a commentator can read aloud, including
+the essential metric name/unit. Overlay: an independently understandable short label and main figure.
+For commentators, lead shot stories with shot counts when these clarify the change; keep the synthetic index
+as a labeled supporting detail. A higher quality-index sum alone does not prove more shots, better finishing,
+goal probability or tactical dominance. Use supplied shot-count facts to check volume before claiming an increase.
+Explain territorial share as each team's completed passes in its own attacking third relative to both teams'
+such passes; it is not total pass share. Avoid turning definitions into invented tactical explanations.
+Commentators need a precise speakable line and useful editorial context. Do not treat the
 heuristic shot-quality points as xG or a goal probability, or territorial passing share as possession or threat.
 For interpretations use cautious language and a nonempty limits array. Do not assert causal explanations.
 On repair, rewrite only supplied rejected stories using rejection_codes. Return cards.""",
@@ -90,7 +103,12 @@ On repair, rewrite only supplied rejected stories using rejection_codes. Return 
 the requested language/audience (including limitations). Reject invented match phases or time labels,
 mismatched metric labels, unsupported interpretation, causal language,
 incorrect comparisons, wrong audience or language, and missing essential qualifiers. Heuristic quality is not
-xG; territorial passing share is not possession duration or threat. Source limitations will also be displayed
+xG; territorial passing share is not possession duration or threat. Reject repeated headline/explanation/line,
+bare unlabelled numbers, synthetic quality values
+without an explicit synthetic-index label and points unit, and territorial values without attacking-third
+passing context and a percent unit. Reject a claim of increased shot volume unless shot-count facts support it.
+Use wrong_audience for redundant/unusable prose, unsupported_meaning for misrepresented measures.
+Source limitations are displayed
 automatically, so an observed numeric headline need not repeat them. Return decisions, exactly one per supplied
 story_id. For rejection use allowed codes; for acceptance codes must be empty. No prose or private reasoning.""",
 }

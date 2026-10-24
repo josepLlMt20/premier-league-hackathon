@@ -1,5 +1,11 @@
 # Grounded agents: implementation and validation
 
+## Professional copy correction, 24 October
+
+The writer/reviewer now distinguish headline, explanatory context, speakable commentary and compact overlay. Numerical synthetic-shot-index claims require an explicit synthetic/heuristic index label and points unit; territorial-share values require attacking-third passing context and a percent unit. Exact repeated main fields are rejected after normalized rendering and may be repaired within the existing budget. These are narrow mechanical guards, not a semantic-quality guarantee. Higher index sums must not be described as higher shot volume without supporting shot counts.
+
+The bilingual scripted writer now supplies readable pattern-specific examples.65 frontend unit tests,269 backend tests and22 real browser journeys pass. Two separate real professional samples (ES/EN) returned factual fallback at the unchanged10-second deadline; English also encountered a free-number rejection. No new live editorial-quality success is claimed. See [professional validation and measured report](commentator-validation.md).
+
 Scope: task 4 of the approved plan. The analyst, writer and reviewer use one closed snapshot and explicit typed handoffs. This delivery does not add the API, web application, browser state, hosted agents or deployment. The previous persistent-ingestion PR is merged into master.
 
 ## Workflow

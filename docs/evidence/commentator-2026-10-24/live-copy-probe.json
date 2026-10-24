@@ -1,0 +1,116 @@
+{
+  "purpose": "Two bounded commentator samples after copy changes; neither produced publishable editorial output within the unchanged deadline.",
+  "results": [
+    {
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "es",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "mode": "factual",
+      "status": "factual",
+      "rejection_codes": [
+        "deadline"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "system",
+            "decision": "factual_fallback"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 3,
+        "tool_calls": 1,
+        "input_tokens": 5718,
+        "output_tokens": 387,
+        "elapsed_seconds": 10.0138
+      }
+    },
+    {
+      "request": {
+        "match_id": "m-c7261c37c40ffd45",
+        "from_sequence": 0,
+        "to_sequence": 269,
+        "role": "commentator",
+        "depth": "simple",
+        "language": "en",
+        "favorite_team_id": null
+      },
+      "snapshot_id": "m-c7261c37c40ffd45:269:0a88c78b70eb0690",
+      "mode": "factual",
+      "status": "factual",
+      "rejection_codes": [
+        "deadline",
+        "free_number"
+      ],
+      "trace": {
+        "steps": [
+          {
+            "role": "analyst",
+            "decision": "started"
+          },
+          {
+            "role": "analyst",
+            "decision": "candidates_prefetched"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "started"
+          },
+          {
+            "role": "reviewer",
+            "decision": "accepted"
+          },
+          {
+            "role": "writer",
+            "decision": "repair_requested"
+          },
+          {
+            "role": "writer",
+            "decision": "started"
+          },
+          {
+            "role": "system",
+            "decision": "factual_fallback"
+          }
+        ],
+        "tool_names": [
+          "list_candidates"
+        ],
+        "model_calls": 4,
+        "tool_calls": 1,
+        "input_tokens": 9565,
+        "output_tokens": 629,
+        "elapsed_seconds": 10.0074
+      }
+    }
+  ]
+}

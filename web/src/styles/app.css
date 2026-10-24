@@ -827,6 +827,9 @@ details > summary {
 .recap-summary + .caption {
   margin-top: var(--space-3);
 }
+.recap-summary-count {
+  margin-top: var(--space-4);
+}
 .shot-comparison {
   margin-top: var(--space-4);
 }

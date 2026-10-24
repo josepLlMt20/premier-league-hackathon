@@ -90,7 +90,11 @@ export function Commentator(props: ContextPanelProps) {
                     ? t.insufficient
                     : t.factual}
             </Badge>
-            <p className="recap-summary">{result.summary}</p>
+            {cards.length ? (
+              <p className="recap-summary-count caption">{p.stories(cards.length)}</p>
+            ) : (
+              <p className="recap-summary">{result.summary}</p>
+            )}
             {frame &&
               cards.map((card, index) => (
                 <BriefingCard
